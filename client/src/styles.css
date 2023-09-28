@@ -3,7 +3,7 @@
   text-align: center;
   border: 1px black solid;
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-columns: 1fr 2fr 1fr 1fr 2fr;
 }
 
 .budget h1 {
@@ -22,18 +22,25 @@
 }
 
 .category {
-  grid-column-start: 1;
-  grid-column-end: 3;
+  width: 100%;
   display: flex;
-  flex-direction: column;
-}
-
-.category input {
-  padding: auto;
   height: 100%;
 }
 
+.categorydiv {
+  display: flex;
+  flex-direction: column;
+  grid-column-start: 2;
+}
+
+
+.category-name {
+  width:100%;
+}
+
 .amount-box {
+  grid-column-start: 4;
+  grid-row-start: 1;
   border: 1px black solid;
   background-color: lightgrey;
   display: flex;
@@ -47,22 +54,28 @@
 }
 
 .newbutton {
-  grid-row-start: end;
-  grid-column-start: 3;
+  padding: 1em;
+}
+
+.newcat {
+  grid-column-start: 1;
+  grid-row-start: 1;
+
 }
 
 .total-amount {
-  grid-row-start: end;
-  grid-column-start: 4;
-  border: 1px black solid;
+  grid-column-start: 5;
+  grid-row-start: 1;
+  border: 1px yellow solid;
   height: 100%;
 }
 
 .transactions {
-  display: flex;
   border: 1px pink solid;
-  flex-direction: column;
-  width: 90%;
+  width: 80%;
+  margin: auto;
+  display:flex;
+  flex-direction: column-reverse;
 }
 
 .column {
@@ -77,19 +90,17 @@
   border: 1px black solid;
 }
 
-.options,
-.date {
-  width: 10%;
-}
 
 .row-transaction {
   border: 1px blue solid;
-  flex-direction: row;
-  align-items: stretch;
+  display: grid;
+  grid-template-columns: 2fr 0.5fr 1fr 1fr 1fr;
+  width: 100%;
 }
 
-.expend,
-.income,
-.trans-name {
-  width: 25%;
+.newrow {
+  border: 1px red solid;
+  width: max-content;
+  position: relative;
+  top: 3em;
 }
