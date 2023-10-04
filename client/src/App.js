@@ -41,20 +41,22 @@ function AmountBox({ Numvalue, Spent }) {
   );
 }
 
-function NewBox({ handleClick, title }) {
+function NewBox({ handleClick, title, id }) {
   return <button className="newbutton" onClick={handleClick}>{title}</button>;
 }
 
-function TransCat({ categories, change, index }) {
+function TransCat({ categories, change, index, data }) {
+ 
   return (
     <select
       name="dropdown"
       className="options"
+      value= {data[3]}
       onChange={(event) => change(event, index)}
     >
       <option className="firstoption"></option>
       {categories.map((item, index) => (
-        <option value={item[0]}>{item[0]}</option>
+        <option value={item[1]}>{item[1]}</option>
       ))}
     </select>
   );
@@ -62,33 +64,46 @@ function TransCat({ categories, change, index }) {
 
 function Row({
   index,
+  data,
   boxvalue,
   handleCatOption,
   inputCallback,
-  nameCallback
+  nameCallback,
+  handleDate
 }) {
   return (
     <div className="row-transaction">
       <input
         placeholder={index}
         className="trans-name"
+        value = {data[1]}
         onChange={(eventData) => nameCallback(eventData, index)}
       />
-      <input placeholder="Date" className="date" type="date" />
+      <input 
+      placeholder="Date" 
+      className="date" 
+      type="date" 
+      value={data[2].slice(0,10)}    
+      onChange = {(eventD)=>{
+        handleDate(eventD, index)
+      } } />
       <TransCat
         categories={boxvalue}
+        data = {data}
         change={(extra) => handleCatOption(extra, index)}
       />
       <input
         placeholder="Expenditure"
         className="expend"
         id="out"
+        value = {data[4]}
         onChange={(eventData) => inputCallback(eventData, index)}
       />
       <input
         placeholder="Income"
         className="income"
         id="in"
+        value = {data[5]}
         onChange={(eventData) => inputCallback(eventData, index)}
       />
     </div>
@@ -97,36 +112,80 @@ function Row({
 
 export default function App() {
   //boxvlue = [id, category, budgetamount, spent]
-  const [boxvalue, setBoxvalue] = useState(Array(3).fill([]));
+  const [boxvalue, setBoxvalue] = useState(Array(3).fill([0, "", 0, 0]));
   const [total, setTotal] = useState(0);
-  //transaction = [name, category, expense, income]
-  const [transaction, setTransaction] = useState(Array(5).fill(["", "", 0, 0]));
+  //transaction = [id, name, date, category, expense, income]
+  const [transaction, setTransaction] = useState(Array(1).fill([0, "","", "", 0, 0]));
   //Backend
-  const [backend, setBackend] = useState({});
+ 
 
-  useEffect(() => {
+
+  useEffect(()=> {
     fetch("/load")
     .then(response => response.json())
     .then(data => {
       let stuff = boxvalue.slice()
-      console.log("Slice", stuff)
-      for(let i in data){
-        stuff[i] = [data[i]._id, data[i].name, data[i].amount, data[i].spent] ;
+      let transstuff = transaction.slice();
+      for(let i in data.category){
+        stuff[i] = [
+          data.category[i]._id, 
+          data.category[i].name, 
+          data.category[i].amount, 
+          data.category[i].spent
+        ];
       }
+      for(let x in data.transaction){
+        if(!data.transaction[x].date){
+          data.transaction[x].date = "1000-01-01";
+        }
+        transstuff[x] = [
+          data.transaction[x]._id, 
+          data.transaction[x].tname, 
+          data.transaction[x].date,
+          data.transaction[x].category,
+          data.transaction[x].expense,
+          data.transaction[x].income,
+        ]
+      }
+      setTransaction(transstuff)
       setBoxvalue(stuff)
     })
+    
   }, [])
 
-  useEffect(() => {
-    console.log("box", boxvalue)
-    fetch("/update", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(boxvalue)})
-    .then(response=> response.json())
-    .then(
-      data=> {
-        console.log("/update response data: ", data)
-      }
-    )
-  }, boxvalue);
+  function updateSpent(x){
+    const idspent = [x[0], x[3]]
+    console.log("spent", x)
+    fetch("/update", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(idspent)})
+      .then(response=> response.json())
+      .then(
+        data=> {
+           console.log("app.js spent fetch: ", data)
+        }
+      )
+  }
+
+  function update(boxstuff){
+    console.log("update: ", boxstuff)
+    fetch("/update", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(boxstuff)})
+      .then(response=> response.json())
+      .then(
+        data=> {
+           console.log("app.js category fetch: ", data)
+        }
+      )
+  }
+
+  function updateTransaction(stuff){
+    console.log("updateTransaction", stuff)
+    fetch("/update", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(stuff)})
+      .then(response=> response.json())
+      .then(
+        data=> {
+           console.log("app.js transaction fetch: ", data)
+        }
+      )
+  }
 
 
   function modifyNum(arr, filterArr) {
@@ -157,14 +216,15 @@ export default function App() {
           const str = boxstr.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
           event.target.value = "¥" + str;
           nextTransaction[index] = [
-            nextTransaction[index][0],
+            index,
             nextTransaction[index][1],
+            nextTransaction[index][2],
+            nextTransaction[index][3],
             parseFloat(boxstr),
-            nextTransaction[index][3]
+            nextTransaction[index][5]
           ];
         }
       }
-      setTransaction(nextTransaction);
     } else if (event.target.id === "in") {
       for (let index = 0; index < nextTransaction.length; index++) {
         if (id === index) {
@@ -174,14 +234,15 @@ export default function App() {
           const str = boxstr.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
           event.target.value = "¥" + str;
           nextTransaction[index] = [
-            nextTransaction[index][0],
+            index,
             nextTransaction[index][1],
             nextTransaction[index][2],
+            nextTransaction[index][3],
+            nextTransaction[index][4],
             parseFloat(boxstr)
           ];
         }
       }
-      setTransaction(nextTransaction);
     } else {
       let tot = 0;
       for (let i = 0; i < nextBoxVal.length; i++) {
@@ -200,7 +261,6 @@ export default function App() {
         }
         tot += nextBoxVal[i][2];
       }
-      setBoxvalue(nextBoxVal);
       setTotal(tot);
     }
 
@@ -208,20 +268,24 @@ export default function App() {
       let spent = 0;
       for (let ii = 0; ii < nextTransaction.length; ii++) {
         if (
-          nextBoxVal[x][1] === nextTransaction[ii][1] &&
-          nextTransaction[ii][2] > 0
+          nextBoxVal[x][1] === nextTransaction[ii][3] &&
+          nextTransaction[ii][4] > 0
         ) {
-          spent += nextTransaction[ii][2];
+          spent += nextTransaction[ii][4];
         } else if (
-          nextBoxVal[x][1] === nextTransaction[ii][1] &&
-          nextTransaction[ii][3] > 0
+          nextBoxVal[x][1] === nextTransaction[ii][3] &&
+          nextTransaction[ii][5] > 0
         ) {
-          spent -= nextTransaction[ii][3];
+          spent -= nextTransaction[ii][5];
         }
       }
-      nextBoxVal[x] = [nextBoxVal[x][0], nextBoxVal[x][1], nextBoxVal[x][2], spent];
-      setBoxvalue(nextBoxVal);
+      nextBoxVal[x] = [id, nextBoxVal[x][1], nextBoxVal[x][2], spent];
+
     }
+    setBoxvalue(nextBoxVal);
+    setTransaction(nextTransaction);
+    updateTransaction(nextTransaction[id])
+    update(nextBoxVal[id])
   }
 
   function handleCatName(event, id) {
@@ -234,32 +298,63 @@ export default function App() {
       }
     }
     setBoxvalue(nextBox);
+    update(nextBox[id])
+
   }
 
   function handleCatOption(event, index) {
     const tempTransaction = transaction.slice();
     tempTransaction[index] = [
-      tempTransaction[index][0],
-      event.target.value,
+      index,
+      tempTransaction[index][1],
       tempTransaction[index][2],
-      tempTransaction[index][3]
+      event.target.value,
+      tempTransaction[index][4],
+      tempTransaction[index][5]
     ];
+    updateTransaction(tempTransaction[index])
     setTransaction(tempTransaction);
   }
 
   function newRow() {
-    setTransaction([["", "", 0, 0], ...transaction]);
+    const newId = transaction.length;
+    const newArr = [newId, "", "", "", 0, 0];
+    setTransaction([...transaction, newArr]);
+    updateTransaction(newArr)
   }
 
   function transName(data, index) {
     const tempTrans = transaction.slice();
     tempTrans[index] = [
+      index,
       data.target.value,
-      tempTrans[index][1],
       tempTrans[index][2],
-      tempTrans[index][3]
+      tempTrans[index][3],
+      tempTrans[index][4],
+      tempTrans[index][5]
     ];
+    updateTransaction(tempTrans[index])
     setTransaction(tempTrans);
+  }
+
+  function handleDate(data, index){
+    console.log(data.target.value)
+    const tempTrans = transaction.slice();
+    tempTrans[index] = [
+      index,
+      tempTrans[index][1],
+      data.target.value,
+      tempTrans[index][3],
+      tempTrans[index][4],
+      tempTrans[index][5]
+    ];
+    updateTransaction(tempTrans[index])
+    setTransaction(tempTrans);
+  }
+
+  function handleNewCat(){
+    setBoxvalue([[boxvalue.length, "", 0, 0], ...boxvalue])
+    update([boxvalue.length, "", 0, 0])
   }
 
 
@@ -296,7 +391,7 @@ export default function App() {
         <div className="newcat">
           <NewBox
             title="New Category"
-            handleClick={() => setBoxvalue([...boxvalue, [0, "", 0, 0]])}
+            handleClick={handleNewCat}
           />
         </div>
         <div className="total-amount" id="total">
@@ -304,7 +399,7 @@ export default function App() {
         </div>
       </div>
       <div className="newrow">
-        <button className="newbutton" onClick={() => newRow()}>
+        <button className="newbutton" onClick={newRow}>
           New Row
         </button>
       </div>
@@ -317,6 +412,7 @@ export default function App() {
             handleCatOption={handleCatOption}
             inputCallback={(x, y) => handleInput(x, y)}
             nameCallback={(x, y) => transName(x, y)}
+            handleDate = {(x,y)=> handleDate(x,y)}
             key={index}
           />
         ))}

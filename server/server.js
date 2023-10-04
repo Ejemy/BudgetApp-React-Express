@@ -18,20 +18,19 @@ const url = process.env.MONGO_URI;
 
 const db = mongoose.createConnection(url, {useNewUrlParser: true, useUnifiedTopology: true})
 
-var categorySchema = new mongoose.Schema({_id: Number, name: String, amount: Number, spent: Number})
+var categorySchema = new mongoose.Schema({_id: Number, name: String, amount: Number, spent: Number});
+var transactionSchema = new mongoose.Schema({_id: Number, tname: String, date: Date, category: String, expense: Number, income: Number})
 let Category = db.model("Category", categorySchema);
-
-
-//MIBHG NEED TO MAKE DOCUMENTS IN THE boxvalue BEFORE IT CAN UPDATE.
-
-
+let Transaction = db.model("Transaction", transactionSchema)
 
 app.get("/load", async (req, res) => {
   try {
-    const data = await Category.find({}).exec();
+    const data = await Category.find({})
+    const transD = await Transaction.find({})
+    const combinedData = {category: data, transaction: transD}
+    console.log("combined Data: ", combinedData)
     if (data && data.length > 0) {
-      console.log(data);
-      res.json(data);
+      res.json(combinedData);
     } else {
       console.log("No data found.");
       res.status(404).json({ message: "No data found" });
@@ -44,10 +43,34 @@ app.get("/load", async (req, res) => {
 
 
 app.post("/update", async (req, res) => {
-  for(let i in req.body){
-    Category.findByIdAndUpdate({_id: req.body[i][0]}, {name: req.body[i][1], amount: req.body[i][2], spent: req.body[i][3]}, {new:true})
-  } 
-  
+
+  try{
+    if(typeof req.body[0] != "number"){
+      console.log("error400", req.body[0], typeof req.body[0])
+      return res.status(400).json({error: "Invalid request data."})
+    }
+
+    if (req.body[5] != undefined){
+      console.log("updating transactions..."); //KEEPS CHANGING ID BECAUSE OF THE TRANSACTION ORDERING WHEN NEW BUTTON
+      console.log("/update if it's a transaction: ", req.body)
+      const update = await Transaction.findOneAndUpdate({_id: req.body[0]}, 
+        {tname: req.body[1], date: req.body[2], category: req.body[3], expense: req.body[4], income: req.body[5]}, {new:true, upsert: true})
+        return res.status(200).json({data: update})
+    }
+    else {
+      console.log("updating categories...", req.body);
+      const update =  await Category.findOneAndUpdate({_id: req.body[0]}, 
+        {name: req.body[1], amount: req.body[2], spent: req.body[3]}, {new:true, upsert: true})
+        return res.status(200).json({data: update})
+
+    }  
+      
+      
+  } catch(err){
+    console.log(err)
+    res.status(500).json({error: "Internal server error."})
+  }
+ 
 });
 
 app.listen(5000, () => {
