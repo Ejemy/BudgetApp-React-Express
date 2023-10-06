@@ -1,6 +1,6 @@
 import "./styles.css";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 function CategoryAmount({ parentCallback, idval, val }) {
   return (
@@ -8,7 +8,7 @@ function CategoryAmount({ parentCallback, idval, val }) {
       className="categorybox"
       placeholder="Budgeted"
       id="categoryamount"
-      value={val}
+      value={"¥" + val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
       onChange={(event) => parentCallback(event, idval)}
     />
   );
@@ -29,24 +29,28 @@ function CategoryName({ categname, idval, val }) {
 }
 
 function AmountBox({ Numvalue, Spent }) {
-  const [numval, setNumval] = useState(Numvalue);
+  //const [numval, setNumval] = useState(Numvalue);
 
+  /*
   useEffect(() => {
     setNumval(Numvalue);
   }, [Numvalue]);
+  */
   return (
     <div className="amount-children" id="amountbox">
-      ¥{(numval - Spent).toLocaleString()}
+      ¥{(Numvalue - Spent).toLocaleString()}
     </div>
   );
 }
+
+
 
 function NewBox({ handleClick, title, id }) {
   return <button className="newbutton" onClick={handleClick}>{title}</button>;
 }
 
 function TransCat({ categories, change, index, data }) {
- 
+  
   return (
     <select
       name="dropdown"
@@ -54,9 +58,10 @@ function TransCat({ categories, change, index, data }) {
       value= {data[3]}
       onChange={(event) => change(event, index)}
     >
-      <option className="firstoption"></option>
+      <option value = "1" className="firstoption"></option>
+      <option value= "income" className="paycheck">Income</option>
       {categories.map((item, index) => (
-        <option value={item[1]}>{item[1]}</option>
+        <option key = {index} value={item[1]}>{item[1]}</option>
       ))}
     </select>
   );
@@ -73,12 +78,6 @@ function Row({
 }) {
   return (
     <div className="row-transaction">
-      <input
-        placeholder={index}
-        className="trans-name"
-        value = {data[1]}
-        onChange={(eventData) => nameCallback(eventData, index)}
-      />
       <input 
       placeholder="Date" 
       className="date" 
@@ -87,6 +86,12 @@ function Row({
       onChange = {(eventD)=>{
         handleDate(eventD, index)
       } } />
+      <input
+        placeholder={index}
+        className="trans-name"
+        value = {data[1]}
+        onChange={(eventData) => nameCallback(eventData, index)}
+      />
       <TransCat
         categories={boxvalue}
         data = {data}
@@ -96,18 +101,53 @@ function Row({
         placeholder="Expenditure"
         className="expend"
         id="out"
-        value = {data[4]}
+        value = {"¥" + data[4].toLocaleString()}
         onChange={(eventData) => inputCallback(eventData, index)}
       />
       <input
         placeholder="Income"
         className="income"
         id="in"
-        value = {data[5]}
+        value = {"¥" + data[5].toLocaleString()}
         onChange={(eventData) => inputCallback(eventData, index)}
       />
     </div>
   );
+}
+
+function Totals({ tots, transaction }){
+  let expense = 0;
+  let income = 0;
+  for(let i in transaction){
+    if(transaction[i][4] > 0){
+      expense -= transaction[i][4]
+    }
+    if(transaction[i][5] > 0){
+      income += transaction[i][5]
+    }
+  }
+  const actual = income + expense;
+  let actualcolor = "black"
+  if(actual < 0){
+    actualcolor = "red"
+  } else {
+    actualcolor = "black"
+  }
+
+  return (
+    <div className = "totals-container">
+      <div className="budgeted">Budgeted: ¥{tots.toLocaleString()}</div>
+      <div className="budgeted">Left to budget: ¥{(income-tots).toLocaleString()}</div>
+      <div className="actual" style={{color: actualcolor}} >Actual: ¥{actual.toLocaleString()} </div>
+    </div>
+    
+  )
+}
+
+function Delete( {value, index, callback} ){
+  return (
+    <button className="delete" onClick={(event)=> {callback(event, index)}}>X</button>
+  )
 }
 
 export default function App() {
@@ -121,6 +161,7 @@ export default function App() {
 
 
   useEffect(()=> {
+    console.log("load...")
     fetch("/load")
     .then(response => response.json())
     .then(data => {
@@ -136,7 +177,7 @@ export default function App() {
       }
       for(let x in data.transaction){
         if(!data.transaction[x].date){
-          data.transaction[x].date = "1000-01-01";
+          data.transaction[x].date = "2000-01-01";
         }
         transstuff[x] = [
           data.transaction[x]._id, 
@@ -149,21 +190,11 @@ export default function App() {
       }
       setTransaction(transstuff)
       setBoxvalue(stuff)
+      calculateTotal(stuff)
     })
-    
   }, [])
 
-  function updateSpent(x){
-    const idspent = [x[0], x[3]]
-    console.log("spent", x)
-    fetch("/update", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(idspent)})
-      .then(response=> response.json())
-      .then(
-        data=> {
-           console.log("app.js spent fetch: ", data)
-        }
-      )
-  }
+  
 
   function update(boxstuff){
     console.log("update: ", boxstuff)
@@ -187,7 +218,18 @@ export default function App() {
       )
   }
 
+  function deleteBox(stuff){
+    console.log("Deleting...", stuff);
+    fetch("/delete", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(stuff)})
+      .then(response=> response.json())
+      .then(
+        data=> {
+          console.log("app.js delete fetch: ", data)
+        }
+      )
+  }
 
+//Ensures that the input is only a number
   function modifyNum(arr, filterArr) {
     for (let j = 0; j < arr.length; j++) {
       if (arr[j].match(/\d/)) {
@@ -197,6 +239,14 @@ export default function App() {
 
     const boxvalstr = filterArr.join("");
     return boxvalstr;
+  }
+
+  function calculateTotal(value){
+    let total = 0;
+    for(let x in value){
+      total += value[x][2]
+    }
+    setTotal(total)
   }
 
   function handleInput(event, id) {
@@ -244,7 +294,6 @@ export default function App() {
         }
       }
     } else {
-      let tot = 0;
       for (let i = 0; i < nextBoxVal.length; i++) {
         if (i === id) {
           const arr = [...val];
@@ -259,9 +308,9 @@ export default function App() {
             nextBoxVal[id][3]
           ];
         }
-        tot += nextBoxVal[i][2];
+        
       }
-      setTotal(tot);
+      calculateTotal(nextBoxVal)
     }
 
     for (let x = 0; x < nextBoxVal.length; x++) {
@@ -304,6 +353,7 @@ export default function App() {
 
   function handleCatOption(event, index) {
     const tempTransaction = transaction.slice();
+
     tempTransaction[index] = [
       index,
       tempTransaction[index][1],
@@ -357,12 +407,50 @@ export default function App() {
     update([boxvalue.length, "", 0, 0])
   }
 
+  function handleDelete(val, index){
+    const tempBox = boxvalue.slice();
+    let todelete = []
+    for(let i in tempBox){
+      if(tempBox[i][0] == index){
+        todelete = tempBox.slice(i, i+1)
+        tempBox.splice(i, 1)
+      }
+    }
+    setBoxvalue(tempBox)
+    deleteBox(todelete)
+  }
+
 
 
   return (
     <div className="App">
-      <h1> Budget thingy </h1>
+      <div className="title">
+        <h1> Budget thingy </h1>
+        <h1 className="dateTitle">
+         {
+         (()=> {
+          const date = new Date();
+          const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+          const month = date.getMonth()
+          const year = date.getFullYear()
+
+          return months[month] + " " + year
+          })()
+        }
+        </h1>
+      </div>
+      <div className="total-amount" id="total">
+          <Totals 
+          tots = {total}
+          transaction = {transaction}
+          />
+          
+        </div>
+
       <div className="budget">
+          <p>Category</p>
+          <p>Budgeted</p>
+          <p>Remaining</p>
         <div className="categorydiv">
           {boxvalue.map((value, index) => (
             <CategoryName key={index} idval={index} val={value} categname={handleCatName} />
@@ -388,16 +476,25 @@ export default function App() {
             />
           ))}
         </div>
+        <div className="deleteCat">
+          {boxvalue.map((value, index)=> (
+            <Delete 
+              value = {value}
+              index = {index}
+              key = {index}
+              callback = {(x,y) => handleDelete(x,y)}
+            />
+          ))}
+        </div>
         <div className="newcat">
           <NewBox
             title="New Category"
             handleClick={handleNewCat}
           />
         </div>
-        <div className="total-amount" id="total">
-          <p>Total: ¥{total.toLocaleString()}</p>
-        </div>
+        
       </div>
+      
       <div className="newrow">
         <button className="newbutton" onClick={newRow}>
           New Row

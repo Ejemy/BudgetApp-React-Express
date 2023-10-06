@@ -3,14 +3,58 @@
   text-align: center;
   border: 1px black solid;
   display: grid;
-  grid-template-columns: 1fr 2fr 1fr 1fr 2fr;
+  width: 65%;
+  margin: auto;
+  grid-template-columns: 1fr 2fr 1fr 1fr auto;
+  grid-template-rows: auto auto;
 }
 
+.title{
+  display:flex;
+  margin: auto;
+  width: 50%;
+  justify-content: space-between;
+}
+.dateTitle{
+  border: 3px black solid;
+  border-radius: 10px;
+}
+.date{
+  border: 1px black solid;
+}
+
+.budget > p:first-child{
+  grid-row-start:1;
+  grid-column-start:2;
+}
+
+.budget > p:nth-child(2){
+  grid-row-start:1;
+  grid-column-start:3;
+}
+
+.budget > p:nth-child(3){
+  grid-row-start:1;
+  grid-column-start:4;
+}
+.budget > p{
+  height: 1em;
+  font-size: small;
+  padding: 0;
+  padding-bottom: 0.5em;
+  margin: 0;
+  background-color: #ededed;
+  border: 1px black dotted;
+}
 .budget h1 {
   border: 1px black solid;
 }
+
+
+
 .categoryamount {
   grid-column-start: 3;
+  grid-row-start: 2;
   border: 1px black solid;
   display: flex;
   flex-direction: column;
@@ -31,6 +75,8 @@
   display: flex;
   flex-direction: column;
   grid-column-start: 2;
+  grid-row-start: 2;
+  border: 1px black solid;
 }
 
 
@@ -40,7 +86,7 @@
 
 .amount-box {
   grid-column-start: 4;
-  grid-row-start: 1;
+  grid-row-start: 2;
   border: 1px black solid;
   background-color: lightgrey;
   display: flex;
@@ -59,19 +105,35 @@
 
 .newcat {
   grid-column-start: 1;
-  grid-row-start: 1;
+  grid-row-start: 2;
+  grid-row-end: 2;
+}
 
+.deleteCat{
+  grid-row-start: 2;
+  grid-column-start: 5;
+  display: flex;
+  flex-direction: column;  
+}
+.deleteCat button{
+  height:100%;
 }
 
 .total-amount {
-  grid-column-start: 5;
-  grid-row-start: 1;
-  border: 1px yellow solid;
   height: 100%;
+  margin: auto;
+  width: 60%;
+  background-color: lightgrey;
+  
+}
+
+.totals-container {
+  display: flex;
+  justify-content: space-evenly;
+  border: 2px black solid;
 }
 
 .transactions {
-  border: 1px pink solid;
   width: 80%;
   margin: auto;
   display:flex;
@@ -82,25 +144,17 @@
   width: 100%;
 }
 
-.categorytrans {
-  border: 1px blue solid;
-}
-
-.date {
-  border: 1px black solid;
-}
-
 
 .row-transaction {
-  border: 1px blue solid;
   display: grid;
-  grid-template-columns: 2fr 0.5fr 1fr 1fr 1fr;
+  grid-template-columns: 0.5fr 1.5fr 1fr 1fr 1fr;
   width: 100%;
 }
 
 .newrow {
-  border: 1px red solid;
   width: max-content;
   position: relative;
   top: 3em;
 }
+
+

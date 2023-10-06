@@ -28,7 +28,6 @@ app.get("/load", async (req, res) => {
     const data = await Category.find({})
     const transD = await Transaction.find({})
     const combinedData = {category: data, transaction: transD}
-    console.log("combined Data: ", combinedData)
     if (data && data.length > 0) {
       res.json(combinedData);
     } else {
@@ -51,17 +50,17 @@ app.post("/update", async (req, res) => {
     }
 
     if (req.body[5] != undefined){
-      console.log("updating transactions..."); //KEEPS CHANGING ID BECAUSE OF THE TRANSACTION ORDERING WHEN NEW BUTTON
+      console.log("updating transactions..."); 
       console.log("/update if it's a transaction: ", req.body)
       const update = await Transaction.findOneAndUpdate({_id: req.body[0]}, 
         {tname: req.body[1], date: req.body[2], category: req.body[3], expense: req.body[4], income: req.body[5]}, {new:true, upsert: true})
-        return res.status(200).json({data: update})
+      return res.status(200).json({data: update})
     }
     else {
       console.log("updating categories...", req.body);
       const update =  await Category.findOneAndUpdate({_id: req.body[0]}, 
         {name: req.body[1], amount: req.body[2], spent: req.body[3]}, {new:true, upsert: true})
-        return res.status(200).json({data: update})
+      return res.status(200).json({data: update})
 
     }  
       
@@ -72,6 +71,16 @@ app.post("/update", async (req, res) => {
   }
  
 });
+
+app.post("/delete", async (req,res)=> {
+  try {
+    const deleting = await Category.findOneAndDelete({_id: req.body[0][0]})
+    return res.status(200).json({data: deleting})
+  } catch(err){
+    console.log(err)
+    res.status(500).json({error: "Something went wrong with deleting..."})
+  }
+})
 
 app.listen(5000, () => {
     console.log("Server running!")
