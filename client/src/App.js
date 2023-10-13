@@ -2,19 +2,19 @@ import "./styles.css";
 
 import { useState, useEffect, useCallback } from "react";
 
-function CategoryAmount({ parentCallback, idval, val }) {
+function CategoryAmount({ parentCallback, idval, val, id }) {
   return (
     <input
       className="categorybox"
       placeholder="Budgeted"
       id="categoryamount"
       value={"¥" + val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-      onChange={(event) => parentCallback(event, idval)}
+      onChange={(event) => parentCallback(event, idval, id)}
     />
   );
 }
 
-function CategoryName({ categname, idval, val }) {
+function CategoryName({ categname, idval, val, id }) {
   return (
     <div  className="category">
       <input type="checkbox" id={idval} value="savings" className="checkbox" />
@@ -22,7 +22,7 @@ function CategoryName({ categname, idval, val }) {
         placeholder="Category"
         className="category-name"
         value={val[1]}
-        onChange={(event) => categname(event, idval)}
+        onChange={(event) => categname(event, idval, id)}
       />
     </div>
   );
@@ -74,7 +74,8 @@ function Row({
   handleCatOption,
   inputCallback,
   nameCallback,
-  handleDate
+  handleDate,
+  handleDelete
 }) {
   return (
     <div className="row-transaction">
@@ -84,32 +85,41 @@ function Row({
       type="date" 
       value={data[2].slice(0,10)}    
       onChange = {(eventD)=>{
-        handleDate(eventD, index)
+        handleDate(eventD, index, data[0])
       } } />
       <input
         placeholder={index}
         className="trans-name"
         value = {data[1]}
-        onChange={(eventData) => nameCallback(eventData, index)}
+        onChange={(eventData) => nameCallback(eventData, index, data[0])}
       />
       <TransCat
         categories={boxvalue}
         data = {data}
-        change={(extra) => handleCatOption(extra, index)}
+        change={(extra) => handleCatOption(extra, index, data[0])}
       />
       <input
         placeholder="Expenditure"
         className="expend"
         id="out"
         value = {"¥" + data[4].toLocaleString()}
-        onChange={(eventData) => inputCallback(eventData, index)}
+        onChange={(eventData) => inputCallback(eventData, index, data[0])}
       />
       <input
         placeholder="Income"
         className="income"
         id="in"
         value = {"¥" + data[5].toLocaleString()}
-        onChange={(eventData) => inputCallback(eventData, index)}
+        onChange={(eventData) => inputCallback(eventData, index, data[0])}
+      />
+      <Delete 
+        value = {data}
+        index = {index}
+        key = {index}
+        id = {data[0]}
+        transcallback = {(stuff) => {
+          handleDelete(stuff,  index, data[0])
+        }}
       />
     </div>
   );
@@ -144,27 +154,35 @@ function Totals({ tots, transaction }){
   )
 }
 
-function Delete( {value, index, callback} ){
-  return (
-    <button className="delete" onClick={(event)=> {callback(event, index)}}>X</button>
+function Delete( {value, index, callback, transcallback, id} ){
+  if(value[5] != undefined){
+    return (
+    <button className="delete" onClick={(event)=>transcallback(event, index, id)}>X</button>
   )
+  } else {
+    return (
+      <button className="delete" onClick={(event)=>callback(event, index, id)}>X</button>
+    )
+  }
+  
 }
 
 export default function App() {
   //boxvlue = [id, category, budgetamount, spent]
-  const [boxvalue, setBoxvalue] = useState(Array(3).fill([0, "", 0, 0]));
+  const [boxvalue, setBoxvalue] = useState(Array(1).fill(["abc123", "", 0, 0]));
   const [total, setTotal] = useState(0);
   //transaction = [id, name, date, category, expense, income]
-  const [transaction, setTransaction] = useState(Array(1).fill([0, "","", "", 0, 0]));
+  const [transaction, setTransaction] = useState(Array(1).fill(["123abc", "","", "", 0, 0]));
   //Backend
- 
-
+  const [firstload, setFirstload] = useState(true)
+  const [deleteBool, setDeletebool] = useState(false)
 
   useEffect(()=> {
     console.log("load...")
     fetch("/load")
     .then(response => response.json())
     .then(data => {
+      console.log("LOAD payload:", data)
       let stuff = boxvalue.slice()
       let transstuff = transaction.slice();
       for(let i in data.category){
@@ -177,7 +195,7 @@ export default function App() {
       }
       for(let x in data.transaction){
         if(!data.transaction[x].date){
-          data.transaction[x].date = "2000-01-01";
+          data.transaction[x].date = "0000-0-0";
         }
         transstuff[x] = [
           data.transaction[x]._id, 
@@ -191,43 +209,65 @@ export default function App() {
       setTransaction(transstuff)
       setBoxvalue(stuff)
       calculateTotal(stuff)
+      setFirstload(false)
+
     })
+
   }, [])
 
-  
 
-  function update(boxstuff){
-    console.log("update: ", boxstuff)
-    fetch("/update", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(boxstuff)})
+  useEffect(()=>{
+    console.log("boxvalue state", boxvalue)
+
+if(!firstload && !deleteBool){
+  console.log("TEST boxvalue", boxvalue)
+    fetch("/update", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(boxvalue)})
       .then(response=> response.json())
       .then(
         data=> {
            console.log("app.js category fetch: ", data)
         }
       )
-  }
-
-  function updateTransaction(stuff){
-    console.log("updateTransaction", stuff)
-    fetch("/update", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(stuff)})
+    }
+    else if(deleteBool){
+      fetch("/delete", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(boxvalue)})
       .then(response=> response.json())
       .then(
         data=> {
-           console.log("app.js transaction fetch: ", data)
+           console.log("app.js category DELETE fetch: ", data)
         }
       )
-  }
+      setDeletebool(false)
+    }
+  }, [boxvalue])
+  
 
-  function deleteBox(stuff){
-    console.log("Deleting...", stuff);
-    fetch("/delete", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(stuff)})
+
+  useEffect(()=> {
+    if(!firstload && !deleteBool){
+      console.log("transaction state", transaction)
+      fetch("/update", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(transaction)})
+        .then(response=> response.json())
+        .then(
+          data=> {
+            console.log("app.js transaction fetch: ", data)
+          }
+        )
+    } else if(deleteBool){
+      fetch("/delete", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(transaction)})
       .then(response=> response.json())
       .then(
         data=> {
-          console.log("app.js delete fetch: ", data)
+           console.log("app.js transaction DELETE fetch: ", data)
         }
       )
-  }
+      setDeletebool(false)
+    }
+    
+  }, [transaction])
+  
+
+ 
 
 //Ensures that the input is only a number
   function modifyNum(arr, filterArr) {
@@ -249,24 +289,25 @@ export default function App() {
     setTotal(total)
   }
 
-  function handleInput(event, id) {
+  function handleInput(event, ind, id) {
     const nextBoxVal = boxvalue.slice();
     let val = event.target.value;
     const nextTransaction = transaction.slice();
-
     //out transactions
     if (event.target.id === "out") {
+      console.log("ID", id)
       //if OUT then cross check category names and change boxvalue?
       //This LOOP formats transaction numbers
       for (let index = 0; index < nextTransaction.length; index++) {
-        if (id === index) {
+        if (nextTransaction[index][0] === id) {
+          console.log("OUT transaction: ", nextTransaction[index][0])
           const arr = [...val];
           const filterArr = [];
           const boxstr = modifyNum(arr, filterArr);
           const str = boxstr.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
           event.target.value = "¥" + str;
           nextTransaction[index] = [
-            index,
+            nextTransaction[index][0],
             nextTransaction[index][1],
             nextTransaction[index][2],
             nextTransaction[index][3],
@@ -277,14 +318,14 @@ export default function App() {
       }
     } else if (event.target.id === "in") {
       for (let index = 0; index < nextTransaction.length; index++) {
-        if (id === index) {
+        if (nextTransaction[index][0] === id) {
           const arr = [...val];
           const filterArr = [];
           const boxstr = modifyNum(arr, filterArr);
           const str = boxstr.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
           event.target.value = "¥" + str;
           nextTransaction[index] = [
-            index,
+            nextTransaction[index][0],
             nextTransaction[index][1],
             nextTransaction[index][2],
             nextTransaction[index][3],
@@ -293,19 +334,20 @@ export default function App() {
           ];
         }
       }
-    } else {
+    } else if(event.target.id === "categoryamount"){
+      //This is for category amount changes
       for (let i = 0; i < nextBoxVal.length; i++) {
-        if (i === id) {
+        if (nextBoxVal[i][0] === id) {
           const arr = [...val];
           const filterArr = [];
           const boxstr = modifyNum(arr, filterArr);
           const str = boxstr.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
           event.target.value = "¥" + str;
-          nextBoxVal[id] = [
-            nextBoxVal[id][0],
-            nextBoxVal[id][1],
+          nextBoxVal[i] = [
+            nextBoxVal[i][0],
+            nextBoxVal[i][1],
             parseFloat(boxstr),
-            nextBoxVal[id][3]
+            nextBoxVal[i][3]
           ];
         }
         
@@ -328,96 +370,126 @@ export default function App() {
           spent -= nextTransaction[ii][5];
         }
       }
-      nextBoxVal[x] = [id, nextBoxVal[x][1], nextBoxVal[x][2], spent];
+      nextBoxVal[x] = [nextBoxVal[x][0], nextBoxVal[x][1], nextBoxVal[x][2], spent];
 
     }
     setBoxvalue(nextBoxVal);
     setTransaction(nextTransaction);
-    updateTransaction(nextTransaction[id])
-    update(nextBoxVal[id])
   }
 
-  function handleCatName(event, id) {
-    // want to save name to database. This isnt working though?
-
+  function handleCatName(event, ind, id) {
     const nextBox = boxvalue.slice();
-    for (let i = 0; i <= nextBox.length; i++) {
-      if (i === id) {
+    for (let i = 0; i < nextBox.length; i++) {
+      if (nextBox[i][0] === id) {
         nextBox[i] = [id, event.target.value, nextBox[i][2], nextBox[i][3]];
       }
     }
     setBoxvalue(nextBox);
-    update(nextBox[id])
 
   }
 
-  function handleCatOption(event, index) {
+  function handleCatOption(event, index, id) {
     const tempTransaction = transaction.slice();
 
     tempTransaction[index] = [
-      index,
+      tempTransaction[index][0],
       tempTransaction[index][1],
       tempTransaction[index][2],
       event.target.value,
       tempTransaction[index][4],
       tempTransaction[index][5]
     ];
-    updateTransaction(tempTransaction[index])
     setTransaction(tempTransaction);
   }
 
   function newRow() {
-    const newId = transaction.length;
+    const abc = "abcdefghijklmnopqrstuvwxyz!#$%";
+    const ranNum = Math.floor(Math.random()* 100);
+    const ranNum2 = Math.floor(Math.random()* 100);
+    const ranLet = abc[Math.floor(Math.random() * abc.length)]
+    const ranLet2 = abc[Math.floor(Math.random() * abc.length)]
+    const newId = ranNum + ranLet + ranNum2 + ranLet2;
     const newArr = [newId, "", "", "", 0, 0];
     setTransaction([...transaction, newArr]);
-    updateTransaction(newArr)
   }
 
-  function transName(data, index) {
+  function transName(data, index, id) {
     const tempTrans = transaction.slice();
     tempTrans[index] = [
-      index,
+      tempTrans[index][0],
       data.target.value,
       tempTrans[index][2],
       tempTrans[index][3],
       tempTrans[index][4],
       tempTrans[index][5]
     ];
-    updateTransaction(tempTrans[index])
     setTransaction(tempTrans);
   }
 
-  function handleDate(data, index){
+  function handleDate(data, index, id){
     console.log(data.target.value)
     const tempTrans = transaction.slice();
     tempTrans[index] = [
-      index,
+      tempTrans[index][0],
       tempTrans[index][1],
       data.target.value,
       tempTrans[index][3],
       tempTrans[index][4],
       tempTrans[index][5]
     ];
-    updateTransaction(tempTrans[index])
     setTransaction(tempTrans);
   }
 
   function handleNewCat(){
-    setBoxvalue([[boxvalue.length, "", 0, 0], ...boxvalue])
-    update([boxvalue.length, "", 0, 0])
+    const abc = "abcdefghijklmnopqrstuvwxyz!#$%";
+    const ranNum = Math.floor(Math.random()* 100);
+    const ranNum2 = Math.floor(Math.random()* 100);
+    const ranLet = abc[Math.floor(Math.random() * abc.length)]
+    const ranLet2 = abc[Math.floor(Math.random() * abc.length)]
+    const idVal = ranNum + ranLet + ranNum2 + ranLet2;
+    setBoxvalue([...boxvalue, [idVal, "", 0, 0]])
   }
 
-  function handleDelete(val, index){
+  function handleDelete(val, index, id){
     const tempBox = boxvalue.slice();
-    let todelete = []
+    const tempTrans = transaction.slice();
+    console.log("tempTrans", tempTrans);
+    for(let t in tempTrans){
+      if(tempTrans[t][0] === id){
+        console.log("Deleting trans...")
+
+        //Set the spent value minus whatever was deleted
+        for(let x in tempBox){
+          if(tempBox[x][1] === tempTrans[t][3]){
+            const newspent = tempTrans[t][4]
+            const newincome = tempTrans[t][5]
+            const boxspent = tempBox[x][3]
+            const newspentbox = newincome - newspent + boxspent;
+            tempBox[x] = [tempBox[x][0], tempBox[x][1], tempBox[x][2], newspentbox];
+
+          }
+        }
+        tempTrans.splice(t, 1)
+        
+      }
+    }
     for(let i in tempBox){
-      if(tempBox[i][0] == index){
-        todelete = tempBox.slice(i, i+1)
+      if(tempBox[i][0] === id){
+        console.log("Deleting cats...")
         tempBox.splice(i, 1)
       }
     }
+    setDeletebool(true)
     setBoxvalue(tempBox)
-    deleteBox(todelete)
+    setTransaction(tempTrans)
+    
+    
+  }
+
+  function updateSpentFromDelete(thing){
+    console.log("update function:", thing)
+    setBoxvalue(thing);
+
   }
 
 
@@ -453,7 +525,7 @@ export default function App() {
           <p>Remaining</p>
         <div className="categorydiv">
           {boxvalue.map((value, index) => (
-            <CategoryName key={index} idval={index} val={value} categname={handleCatName} />
+            <CategoryName key={index} idval={index} val={value} id = {value[0]} categname={(x,y,z)=>{handleCatName(x,y,z)}} />
           ))}
         </div>
         <div className="categoryamount" id="inputamount">
@@ -462,7 +534,8 @@ export default function App() {
               key={index}
               idval={index}
               val = {value[2]}
-              parentCallback={(x, y) => handleInput(x, y)}
+              id = {value[0]}
+              parentCallback={(x, y, z) => handleInput(x, y,z)}
             />
           ))}
         </div>
@@ -482,7 +555,10 @@ export default function App() {
               value = {value}
               index = {index}
               key = {index}
-              callback = {(x,y) => handleDelete(x,y)}
+              id = {value[0]}
+              callback = {(x,y,z) => {
+                handleDelete(x,y,z)
+              }}
             />
           ))}
         </div>
@@ -492,6 +568,7 @@ export default function App() {
             handleClick={handleNewCat}
           />
         </div>
+        
         
       </div>
       
@@ -507,9 +584,10 @@ export default function App() {
             data={event}
             boxvalue={boxvalue}
             handleCatOption={handleCatOption}
-            inputCallback={(x, y) => handleInput(x, y)}
-            nameCallback={(x, y) => transName(x, y)}
-            handleDate = {(x,y)=> handleDate(x,y)}
+            inputCallback={(x, y, z) => handleInput(x, y, z)}
+            nameCallback={(x, y, z) => transName(x, y, z)}
+            handleDate = {(x,y, z)=> handleDate(x,y, z)}
+            handleDelete = {handleDelete}
             key={index}
           />
         ))}
