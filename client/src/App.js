@@ -67,6 +67,73 @@ function TransCat({ categories, change, index, data }) {
   );
 }
 
+function Budget({ 
+  value, 
+  index,
+  handleCatName,
+  handleInput,
+  handleDelete
+ }) {
+
+  return (
+    <div className="row-budget">
+          
+        <div className="categorydiv">
+            <CategoryName key={index} idval={index} val={value} id = {value[0]} categname={(eventData)=>{handleCatName(eventData, index, value[0])}} />
+        </div>
+        <div className="categoryamount" id="inputamount">
+            <CategoryAmount
+              key={index}
+              idval={index}
+              val = {value[2]}
+              id = {value[0]}
+              parentCallback={(event) => handleInput(event, index, value[0])}
+            />
+        </div>
+        <div className="amount-box" id="amountdiv">
+            <AmountBox
+              key={index}
+              idval={index}
+              Numvalue={value[2]}
+              Spent={value[3]}
+            />
+        </div>
+        <div className="deleteCat">
+            <Delete 
+              value = {value}
+              index = {index}
+              key = {index}
+              id = {value[0]}
+              callback = {(stuff) => {
+                handleDelete(stuff, index, value[0])
+              }}
+            />
+        </div>
+        </div>
+  )
+}
+
+
+
+function Savings( {data, index, handleDelete, savingsNameCallback} ){
+  return (
+    <div className="row-savings">
+      <div className="savings-name"></div>
+      <input 
+        className="savings-amount" 
+        placeholder="Budgeted amount"
+        value = {data[2]}
+        id = "savings"
+        onChange={(event)=> savingsNameCallback(event, index, data[0])}        
+      />
+      <div className="savings-total">{data[3]}</div>
+      <div>delete</div>
+    </div>
+    
+  )
+}
+
+
 function Row({
   index,
   data,
@@ -88,7 +155,7 @@ function Row({
         handleDate(eventD, index, data[0])
       } } />
       <input
-        placeholder={index}
+        placeholder="Memo"
         className="trans-name"
         value = {data[1]}
         onChange={(eventData) => nameCallback(eventData, index, data[0])}
@@ -177,6 +244,10 @@ export default function App() {
   const [firstload, setFirstload] = useState(true)
   const [deleteBool, setDeletebool] = useState(false)
 
+  //savings = [id, name, budgetamount, total]
+  const [savings, setSavings] = useState(Array(1).fill(["1a2b3c", "", 0, 0]));
+
+
   useEffect(()=> {
     console.log("load...")
     fetch("/load")
@@ -217,10 +288,8 @@ export default function App() {
 
 
   useEffect(()=>{
-    console.log("boxvalue state", boxvalue)
 
 if(!firstload && !deleteBool){
-  console.log("TEST boxvalue", boxvalue)
     fetch("/update", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(boxvalue)})
       .then(response=> response.json())
       .then(
@@ -293,6 +362,7 @@ if(!firstload && !deleteBool){
     const nextBoxVal = boxvalue.slice();
     let val = event.target.value;
     const nextTransaction = transaction.slice();
+    const tempSavings = savings.slice();
     //out transactions
     if (event.target.id === "out") {
       console.log("ID", id)
@@ -336,6 +406,7 @@ if(!firstload && !deleteBool){
       }
     } else if(event.target.id === "categoryamount"){
       //This is for category amount changes
+      let catTotal = 0;
       for (let i = 0; i < nextBoxVal.length; i++) {
         if (nextBoxVal[i][0] === id) {
           const arr = [...val];
@@ -350,9 +421,29 @@ if(!firstload && !deleteBool){
             nextBoxVal[i][3]
           ];
         }
-        
       }
-      calculateTotal(nextBoxVal)
+      calculateTotal(tempSavings, nextBoxVal)
+    } else if(event.target.id === "savings"){
+      //update savings name
+      for(let i = 0; i < tempSavings.length; i++){
+        console.log(tempSavings[i])
+        if(tempSavings[i][0] === id){
+          console.log("savings:", tempSavings)
+          const arr = [...val];
+          const filterArr = [];
+          const boxstr = modifyNum(arr, filterArr);
+          const str = boxstr.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+          event.target.value = "¥" + str;
+          tempSavings[i] = [
+            tempSavings[i][0],
+            tempSavings[i][1],
+            parseFloat(boxstr),
+            tempSavings[i][3]
+          ]
+        }
+      }
+      //ADD another argument to calculate total function to include tempSavings
+      calculateTotal(tempSavings, nextBoxVal)
     }
 
     for (let x = 0; x < nextBoxVal.length; x++) {
@@ -373,6 +464,7 @@ if(!firstload && !deleteBool){
       nextBoxVal[x] = [nextBoxVal[x][0], nextBoxVal[x][1], nextBoxVal[x][2], spent];
 
     }
+    setSavings(tempSavings)
     setBoxvalue(nextBoxVal);
     setTransaction(nextTransaction);
   }
@@ -486,13 +578,6 @@ if(!firstload && !deleteBool){
     
   }
 
-  function updateSpentFromDelete(thing){
-    console.log("update function:", thing)
-    setBoxvalue(thing);
-
-  }
-
-
 
   return (
     <div className="App">
@@ -518,58 +603,48 @@ if(!firstload && !deleteBool){
           />
           
         </div>
-
-      <div className="budget">
+      <div className="budget-titles">
           <p>Category</p>
           <p>Budgeted</p>
           <p>Remaining</p>
-        <div className="categorydiv">
-          {boxvalue.map((value, index) => (
-            <CategoryName key={index} idval={index} val={value} id = {value[0]} categname={(x,y,z)=>{handleCatName(x,y,z)}} />
-          ))}
-        </div>
-        <div className="categoryamount" id="inputamount">
-          {boxvalue.map((value, index) => (
-            <CategoryAmount
-              key={index}
-              idval={index}
-              val = {value[2]}
-              id = {value[0]}
-              parentCallback={(x, y, z) => handleInput(x, y,z)}
-            />
-          ))}
-        </div>
-        <div className="amount-box" id="amountdiv">
-          {boxvalue.map((value, index) => (
-            <AmountBox
-              key={index}
-              idval={index}
-              Numvalue={value[2]}
-              Spent={value[3]}
-            />
-          ))}
-        </div>
-        <div className="deleteCat">
-          {boxvalue.map((value, index)=> (
-            <Delete 
-              value = {value}
-              index = {index}
-              key = {index}
-              id = {value[0]}
-              callback = {(x,y,z) => {
-                handleDelete(x,y,z)
-              }}
-            />
-          ))}
-        </div>
+      </div>  
+      <div className="budget">
+        {boxvalue.map((value, index) => 
+          (
+          <Budget 
+            value = {value}
+            index = {index}
+            handleDelete = {handleDelete}
+            handleCatName = {(x,y,z)=> handleCatName(x,y,z)}
+            handleInput = {(x,y,z)=> handleInput(x,y,z)}
+          />
+          )
+        )}
+      
+      </div>
+      
         <div className="newcat">
           <NewBox
             title="New Category"
             handleClick={handleNewCat}
+            
           />
         </div>
+        <div>
+        </div>
         
-        
+      <div className="new-savings">
+            <button></button>
+      </div>
+      <div className="savings">
+            {savings.map((value, index) => (
+              <Savings 
+              data = {value}
+              index = {index}
+              handleDelete = {handleDelete}
+              savingsNameCallback= {(x,y,z)=> handleInput(x,y,z)}
+              />
+            ))}
       </div>
       
       <div className="newrow">

@@ -40,8 +40,6 @@ app.get("/load", async (req, res) => {
 app.post("/update", async (req, res) => {
   try{
     if(req.body[0][5] != undefined){
-      console.log("updating transactions..."); 
-      console.log("/update if it's a transaction: ", req.body)
       const updateAll = await Promise.all(
         req.body.map(async (item)=> {
           const update = await Transaction.findOneAndUpdate({_id: item[0]}, 
@@ -53,7 +51,6 @@ app.post("/update", async (req, res) => {
       return res.status(200).json({data: updateAll})
   }
     else{
-      console.log("update POST req.body,", req.body)
       const updateAll= await Promise.all(
         req.body.map(async (item)=> {
           const update =  await Category.findOneAndUpdate({_id: item[0]}, 
@@ -78,7 +75,6 @@ app.post("/update", async (req, res) => {
 
 app.post("/delete", async (req,res)=> {
   try {
-    console.log("updating /DELETE...", req.body);
     if(req.body[0][5] != undefined){
       const reqbodyId = req.body.map((id) => id[0]);
       Transaction.find({}).then(async (existingDocs) => {
