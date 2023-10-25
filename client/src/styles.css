@@ -1,4 +1,4 @@
-.budget {
+.budget, .savings {
   font-family: sans-serif;
   text-align: center;
   width: 65%;
@@ -10,6 +10,22 @@
   grid-template-columns: 2fr 1fr 1fr auto;
 
 }
+
+
+
+.row-savings {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr auto;
+}
+
+.savings-name{
+  width: 100%;
+}
+
+.savings-amount{
+  grid-column-start: 2;
+}
+
 
 .title{
   display:flex;
@@ -85,7 +101,8 @@
   width:100%;
 }
 
-.amount-box {
+
+.amount-box, .savings-total {
   grid-column-start: 3;
   background-color: lightgrey;
   display: flex;
@@ -98,9 +115,11 @@
   height: 100%;
 }
 
-.newbutton {
+.newbutton, .newSavings {
   padding: 1em;
 }
+
+
 
 .newcat {
   grid-column-start: 1;

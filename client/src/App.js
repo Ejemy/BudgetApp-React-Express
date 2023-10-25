@@ -72,9 +72,9 @@ function Budget({
   index,
   handleCatName,
   handleInput,
-  handleDelete
+  handleDelete,
+  box
  }) {
-
   return (
     <div className="row-budget">
           
@@ -107,6 +107,7 @@ function Budget({
               callback = {(stuff) => {
                 handleDelete(stuff, index, value[0])
               }}
+              boxv = {box}
             />
         </div>
         </div>
@@ -115,19 +116,31 @@ function Budget({
 
 
 
-function Savings( {data, index, handleDelete, savingsNameCallback} ){
+function Savings( {data, index, handleDelete, savingsCallback, savingsname, sav} ){
   return (
     <div className="row-savings">
-      <div className="savings-name"></div>
+      <input 
+        className="savings-name"
+        placeholder="Savings Account Name"
+        value={data[1]}
+        onChange= {(event)=> savingsname(event, index, data[0])}
+      />
       <input 
         className="savings-amount" 
         placeholder="Budgeted amount"
         value = {data[2]}
         id = "savings"
-        onChange={(event)=> savingsNameCallback(event, index, data[0])}        
+        onChange={(event)=> savingsCallback(event, index, data[0])}        
       />
       <div className="savings-total">{data[3]}</div>
-      <div>delete</div>
+      <Delete 
+      value={data}
+      index = {index}
+      key ={index}
+      id = {data[0]}
+      savingsDelcallback = {(event)=> handleDelete(event, index, data[0])}
+      sav = {sav}
+      />
     </div>
     
   )
@@ -221,16 +234,25 @@ function Totals({ tots, transaction }){
   )
 }
 
-function Delete( {value, index, callback, transcallback, id} ){
-  if(value[5] != undefined){
-    return (
-    <button className="delete" onClick={(event)=>transcallback(event, index, id)}>X</button>
-  )
-  } else {
-    return (
+function Delete( {value, index, callback, transcallback, savingsDelcallback, id, boxv, sav} ){
+  if(boxv != undefined){
+    if(boxv.flat().filter(i=>i===id)){
+      return (
       <button className="delete" onClick={(event)=>callback(event, index, id)}>X</button>
     )
-  }
+    }
+  } else if(value[5] != undefined){
+      return (
+      <button className="delete" onClick={(event)=>transcallback(event, index, id)}>X</button>
+    )
+    } else if(sav != undefined){
+      if(sav.flat().filter(i=>i===id)){
+        return (
+          <button className="delete" onClick={(event)=>savingsDelcallback(event,index,id)}>X</button>
+        )
+      }
+    }
+     
   
 }
 
@@ -245,7 +267,7 @@ export default function App() {
   const [deleteBool, setDeletebool] = useState(false)
 
   //savings = [id, name, budgetamount, total]
-  const [savings, setSavings] = useState(Array(1).fill(["1a2b3c", "", 0, 0]));
+  const [savings, setSavings] = useState(Array(1).fill(["1a2b3c", "", 0, 0, "savings"]));
 
 
   useEffect(()=> {
@@ -256,6 +278,7 @@ export default function App() {
       console.log("LOAD payload:", data)
       let stuff = boxvalue.slice()
       let transstuff = transaction.slice();
+      let sav = savings.slice();
       for(let i in data.category){
         stuff[i] = [
           data.category[i]._id, 
@@ -277,7 +300,17 @@ export default function App() {
           data.transaction[x].income,
         ]
       }
+      for(let s in data.savings){
+        sav[s]=[
+          data.savings[s]._id,
+          data.savings[s].sname,
+          data.savings[s].samount,
+          data.savings[s].stotal,
+          data.savings[s].sss
+        ]
+      }
       setTransaction(transstuff)
+      setSavings(sav)
       setBoxvalue(stuff)
       calculateTotal(stuff)
       setFirstload(false)
@@ -334,6 +367,29 @@ if(!firstload && !deleteBool){
     }
     
   }, [transaction])
+
+  useEffect(()=> {
+    if(!firstload && !deleteBool){
+      console.log("savings state", savings)
+      fetch("/update", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(savings)})
+        .then(response=> response.json())
+        .then(
+          data=> {
+            console.log("app.js savings fetch: ", data)
+          }
+        )
+    } else if(deleteBool){
+      fetch("/delete", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(savings)})
+      .then(response=> response.json())
+      .then(
+        data=> {
+           console.log("app.js savings DELETE fetch: ", data)
+        }
+      )
+      setDeletebool(false)
+    }
+    
+  }, [savings])
   
 
  
@@ -350,10 +406,13 @@ if(!firstload && !deleteBool){
     return boxvalstr;
   }
 
-  function calculateTotal(value){
+  function calculateTotal(savings, boxv){
     let total = 0;
-    for(let x in value){
-      total += value[x][2]
+    for(let x in boxv){
+      total += boxv[x][2]
+    }
+    for(let z in savings){
+      total += savings[z][2]
     }
     setTotal(total)
   }
@@ -424,7 +483,7 @@ if(!firstload && !deleteBool){
       }
       calculateTotal(tempSavings, nextBoxVal)
     } else if(event.target.id === "savings"){
-      //update savings name
+      //update savings amount
       for(let i = 0; i < tempSavings.length; i++){
         console.log(tempSavings[i])
         if(tempSavings[i][0] === id){
@@ -438,11 +497,11 @@ if(!firstload && !deleteBool){
             tempSavings[i][0],
             tempSavings[i][1],
             parseFloat(boxstr),
-            tempSavings[i][3]
+            tempSavings[i][3],
+            tempSavings[i][4]
           ]
         }
       }
-      //ADD another argument to calculate total function to include tempSavings
       calculateTotal(tempSavings, nextBoxVal)
     }
 
@@ -505,6 +564,17 @@ if(!firstload && !deleteBool){
     setTransaction([...transaction, newArr]);
   }
 
+  function newSavings(){
+    const abc = "abcdefghijklmnopqrstuvwxyz!#$%";
+    const ranNum = Math.floor(Math.random()* 100);
+    const ranNum2 = Math.floor(Math.random()* 100);
+    const ranLet = abc[Math.floor(Math.random() * abc.length)]
+    const ranLet2 = abc[Math.floor(Math.random() * abc.length)]
+    const newId = ranNum + ranLet + ranNum2 + ranLet2;
+    const newArr = [newId, "", 0, 0, "savings"]
+    setSavings([...savings, newArr])
+  }
+
   function transName(data, index, id) {
     const tempTrans = transaction.slice();
     tempTrans[index] = [
@@ -545,7 +615,7 @@ if(!firstload && !deleteBool){
   function handleDelete(val, index, id){
     const tempBox = boxvalue.slice();
     const tempTrans = transaction.slice();
-    console.log("tempTrans", tempTrans);
+    const tempSavings = savings.slice();
     for(let t in tempTrans){
       if(tempTrans[t][0] === id){
         console.log("Deleting trans...")
@@ -565,6 +635,12 @@ if(!firstload && !deleteBool){
         
       }
     }
+    for(let s in tempSavings){
+      if(tempSavings[s][0] === id){
+        console.log("deleting savings")
+        tempSavings.splice(s, 1);
+      }
+    }
     for(let i in tempBox){
       if(tempBox[i][0] === id){
         console.log("Deleting cats...")
@@ -572,12 +648,24 @@ if(!firstload && !deleteBool){
       }
     }
     setDeletebool(true)
+    setSavings(tempSavings)
     setBoxvalue(tempBox)
     setTransaction(tempTrans)
     
     
   }
 
+  function handleSavingsName(val, index, id){
+    console.log("handleSavingsName",index)
+    const tempSavings = savings.slice();
+    tempSavings[index] = [
+      tempSavings[index][0],
+      val.target.value,
+      tempSavings[index][2],
+      tempSavings[index][3]
+    ] 
+    setSavings(tempSavings)
+  }
 
   return (
     <div className="App">
@@ -617,6 +705,7 @@ if(!firstload && !deleteBool){
             handleDelete = {handleDelete}
             handleCatName = {(x,y,z)=> handleCatName(x,y,z)}
             handleInput = {(x,y,z)=> handleInput(x,y,z)}
+            box = {boxvalue}
           />
           )
         )}
@@ -630,21 +719,26 @@ if(!firstload && !deleteBool){
             
           />
         </div>
-        <div>
-        </div>
         
-      <div className="new-savings">
-            <button></button>
-      </div>
+        <div className="budget-titles">
+          <p>Savings Name</p>
+          <p>Budgeted</p>
+          <p>Total</p>
+      </div> 
       <div className="savings">
             {savings.map((value, index) => (
               <Savings 
               data = {value}
               index = {index}
               handleDelete = {handleDelete}
-              savingsNameCallback= {(x,y,z)=> handleInput(x,y,z)}
+              savingsCallback= {(x,y,z)=> handleInput(x,y,z)}
+              savingsname = {(x,y,z) => handleSavingsName(x,y,z)}
+              sav = {savings}
               />
             ))}
+      </div>
+      <div className="new-savings">
+            <button className ="newSavings" onClick={newSavings}>New Savings</button>
       </div>
       
       <div className="newrow">

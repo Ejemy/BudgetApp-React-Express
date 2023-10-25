@@ -20,14 +20,17 @@ const db = mongoose.createConnection(url, {useNewUrlParser: true, useUnifiedTopo
 
 var categorySchema = new mongoose.Schema({_id: String, name: String, amount: Number, spent: Number});
 var transactionSchema = new mongoose.Schema({_id: String, tname: String, date: Date, category: String, expense: Number, income: Number})
+var savingsSchema = new mongoose.Schema({_id: String, sname: String, samount: Number, stotal: Number, sss: String})
 let Category = db.model("Category", categorySchema);
 let Transaction = db.model("Transaction", transactionSchema)
+let Savings = db.model("Savings", savingsSchema)
 
 app.get("/load", async (req, res) => {
   try {
     const data = await Category.find({})
     const transD = await Transaction.find({})
-    const combinedData = {category: data, transaction: transD}
+    const savingsD = await Savings.find({})
+    const combinedData = {category: data, transaction: transD, savings: savingsD}
     return res.json(combinedData);
    
   } catch (err) {
@@ -50,7 +53,19 @@ app.post("/update", async (req, res) => {
       
       return res.status(200).json({data: updateAll})
   }
-    else{
+    else if(req.body[0][4] === "savings"){
+      console.log("updating SAVINGS")
+      const updateAll = await Promise.all(
+        req.body.map(async (item)=> {
+          const update = await Savings.findOneAndUpdate({_id: item[0]},
+            {sname: item[1], samount: item[2], stotal: item[3], sss: item[4]}, {new:true, upsert: true})
+            return update;
+        })
+        );
+      return res.status(200).json({data: updateAll})
+    }
+    else if(req.body[0][4] === undefined){
+      console.log("UPDATING BUDGET")
       const updateAll= await Promise.all(
         req.body.map(async (item)=> {
           const update =  await Category.findOneAndUpdate({_id: item[0]}, 
@@ -84,6 +99,24 @@ app.post("/delete", async (req,res)=> {
         )
 
         const deletion = await Transaction.findOneAndDelete({_id: missingId[0]})
+
+        return res.status(200).json({data: deletion})
+      })
+    } else if(req.body[0][4] === "savings"){
+      const reqbodyId = req.body.map((id) => id[0]);
+      await Promise.all(
+        req.body.map(async (item)=> {
+          await Savings.findOneAndUpdate({_id: item[0]}, 
+          {sname: item[1], samount: item[2], stotal: item[3], sss: item[4]}, {new:true, upsert: true})
+      })
+      );
+      Savings.find({}).then(async (existingDocs) => {
+        const existingDocId = existingDocs.map((item)=> item._id);
+        const missingId = existingDocId.filter(
+          (id) => !reqbodyId.includes(id)
+        )
+
+        const deletion = await Savings.findOneAndDelete({_id: missingId[0]})
 
         return res.status(200).json({data: deletion})
       })
