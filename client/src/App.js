@@ -128,7 +128,7 @@ function Savings( {data, index, handleDelete, savingsCallback, savingsname, sav}
       <input 
         className="savings-amount" 
         placeholder="Budgeted amount"
-        value = {data[2]}
+        value = {"¥" + data[2].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
         id = "savings"
         onChange={(event)=> savingsCallback(event, index, data[0])}        
       />
@@ -264,7 +264,7 @@ export default function App() {
   const [transaction, setTransaction] = useState(Array(1).fill(["123abc", "","", "", 0, 0]));
   //Backend
   const [firstload, setFirstload] = useState(true)
-  const [deleteBool, setDeletebool] = useState(false)
+  const [deleteBool, setDeletebool] = useState([false, []])
 
   //savings = [id, name, budgetamount, total]
   const [savings, setSavings] = useState(Array(1).fill(["1a2b3c", "", 0, 0, "savings"]));
@@ -312,7 +312,7 @@ export default function App() {
       setTransaction(transstuff)
       setSavings(sav)
       setBoxvalue(stuff)
-      calculateTotal(stuff)
+      calculateTotal(sav, stuff)
       setFirstload(false)
 
     })
@@ -321,8 +321,7 @@ export default function App() {
 
 
   useEffect(()=>{
-
-if(!firstload && !deleteBool){
+if(!firstload && !deleteBool[0]){
     fetch("/update", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(boxvalue)})
       .then(response=> response.json())
       .then(
@@ -331,22 +330,22 @@ if(!firstload && !deleteBool){
         }
       )
     }
-    else if(deleteBool){
-      fetch("/delete", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(boxvalue)})
+    else if(deleteBool[0]){
+      fetch("/delete", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(deleteBool[1])})
       .then(response=> response.json())
       .then(
         data=> {
            console.log("app.js category DELETE fetch: ", data)
         }
       )
-      setDeletebool(false)
+      setDeletebool([false, []])
     }
   }, [boxvalue])
   
 
 
   useEffect(()=> {
-    if(!firstload && !deleteBool){
+    if(!firstload && !deleteBool[0]){
       console.log("transaction state", transaction)
       fetch("/update", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(transaction)})
         .then(response=> response.json())
@@ -355,21 +354,21 @@ if(!firstload && !deleteBool){
             console.log("app.js transaction fetch: ", data)
           }
         )
-    } else if(deleteBool){
-      fetch("/delete", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(transaction)})
+    } else if(deleteBool[0]){
+      fetch("/delete", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(deleteBool[1])})
       .then(response=> response.json())
       .then(
         data=> {
            console.log("app.js transaction DELETE fetch: ", data)
         }
       )
-      setDeletebool(false)
+      setDeletebool([false, []])
     }
     
   }, [transaction])
 
   useEffect(()=> {
-    if(!firstload && !deleteBool){
+    if(!firstload && !deleteBool[0]){
       console.log("savings state", savings)
       fetch("/update", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(savings)})
         .then(response=> response.json())
@@ -378,15 +377,15 @@ if(!firstload && !deleteBool){
             console.log("app.js savings fetch: ", data)
           }
         )
-    } else if(deleteBool){
-      fetch("/delete", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(savings)})
+    } else if(deleteBool[0]){
+      fetch("/delete", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(deleteBool[1])})
       .then(response=> response.json())
       .then(
         data=> {
            console.log("app.js savings DELETE fetch: ", data)
         }
       )
-      setDeletebool(false)
+      setDeletebool([false, []])
     }
     
   }, [savings])
@@ -465,7 +464,6 @@ if(!firstload && !deleteBool){
       }
     } else if(event.target.id === "categoryamount"){
       //This is for category amount changes
-      let catTotal = 0;
       for (let i = 0; i < nextBoxVal.length; i++) {
         if (nextBoxVal[i][0] === id) {
           const arr = [...val];
@@ -500,9 +498,10 @@ if(!firstload && !deleteBool){
             tempSavings[i][3],
             tempSavings[i][4]
           ]
+          calculateTotal(tempSavings, nextBoxVal)
+
         }
       }
-      calculateTotal(tempSavings, nextBoxVal)
     }
 
     for (let x = 0; x < nextBoxVal.length; x++) {
@@ -616,6 +615,7 @@ if(!firstload && !deleteBool){
     const tempBox = boxvalue.slice();
     const tempTrans = transaction.slice();
     const tempSavings = savings.slice();
+
     for(let t in tempTrans){
       if(tempTrans[t][0] === id){
         console.log("Deleting trans...")
@@ -631,26 +631,46 @@ if(!firstload && !deleteBool){
 
           }
         }
+        const deleteItem = tempTrans.slice(t, t+1)
         tempTrans.splice(t, 1)
+        if(!tempTrans[0]){
+          tempTrans[0] = ["123abc", "","", "", 0, 0]
+        }
+
+        setDeletebool([true, deleteItem])
+        setTransaction(tempTrans)
         
       }
     }
     for(let s in tempSavings){
       if(tempSavings[s][0] === id){
         console.log("deleting savings")
+        const deleteItem = tempSavings.slice(s, s+1)
         tempSavings.splice(s, 1);
+        if(!tempSavings[0]){
+          tempSavings[0] = ["kljasdf", "", 0, 0, "savings"]
+        }
+        calculateTotal(tempSavings, tempBox)
+        setDeletebool([true, deleteItem])
+        setSavings(tempSavings)
+
       }
     }
     for(let i in tempBox){
       if(tempBox[i][0] === id){
         console.log("Deleting cats...")
+        const deleteItem = tempBox.slice(i, i+ 1)
         tempBox.splice(i, 1)
+
+        if(!tempBox[0]){
+          tempBox[0] = ["asjkldfklasdh", "", 0, 0]
+        }
+        calculateTotal(tempSavings, tempBox)
+        setDeletebool([true, deleteItem])
+        setBoxvalue(tempBox)
+
       }
     }
-    setDeletebool(true)
-    setSavings(tempSavings)
-    setBoxvalue(tempBox)
-    setTransaction(tempTrans)
     
     
   }
@@ -662,7 +682,8 @@ if(!firstload && !deleteBool){
       tempSavings[index][0],
       val.target.value,
       tempSavings[index][2],
-      tempSavings[index][3]
+      tempSavings[index][3],
+      tempSavings[index][4]
     ] 
     setSavings(tempSavings)
   }

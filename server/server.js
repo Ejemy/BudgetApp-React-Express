@@ -54,7 +54,7 @@ app.post("/update", async (req, res) => {
       return res.status(200).json({data: updateAll})
   }
     else if(req.body[0][4] === "savings"){
-      console.log("updating SAVINGS")
+      console.log("updating SAVINGS", req.body)
       const updateAll = await Promise.all(
         req.body.map(async (item)=> {
           const update = await Savings.findOneAndUpdate({_id: item[0]},
@@ -65,7 +65,7 @@ app.post("/update", async (req, res) => {
       return res.status(200).json({data: updateAll})
     }
     else if(req.body[0][4] === undefined){
-      console.log("UPDATING BUDGET")
+      console.log("UPDATING BUDGET", req.body)
       const updateAll= await Promise.all(
         req.body.map(async (item)=> {
           const update =  await Category.findOneAndUpdate({_id: item[0]}, 
@@ -89,55 +89,18 @@ app.post("/update", async (req, res) => {
  
 
 app.post("/delete", async (req,res)=> {
+  console.log("DELETE TEST", req.body)
   try {
+    
     if(req.body[0][5] != undefined){
-      const reqbodyId = req.body.map((id) => id[0]);
-      Transaction.find({}).then(async (existingDocs) => {
-        const existingDocId = existingDocs.map((item)=> item._id);
-        const missingId = existingDocId.filter(
-          (id) => !reqbodyId.includes(id)
-        )
-
-        const deletion = await Transaction.findOneAndDelete({_id: missingId[0]})
-
+        const deletion = await Transaction.findOneAndDelete({_id: req.body[0][0]})
         return res.status(200).json({data: deletion})
-      })
     } else if(req.body[0][4] === "savings"){
-      const reqbodyId = req.body.map((id) => id[0]);
-      await Promise.all(
-        req.body.map(async (item)=> {
-          await Savings.findOneAndUpdate({_id: item[0]}, 
-          {sname: item[1], samount: item[2], stotal: item[3], sss: item[4]}, {new:true, upsert: true})
-      })
-      );
-      Savings.find({}).then(async (existingDocs) => {
-        const existingDocId = existingDocs.map((item)=> item._id);
-        const missingId = existingDocId.filter(
-          (id) => !reqbodyId.includes(id)
-        )
-
-        const deletion = await Savings.findOneAndDelete({_id: missingId[0]})
-
-        return res.status(200).json({data: deletion})
-      })
+      const deletion = await Savings.findOneAndDelete({_id: req.body[0][0]})
+      return res.status(200).json({data: deletion})
     } else {
-      const reqbodyId = req.body.map((id) => id[0]);
-      await Promise.all(
-        req.body.map(async (item)=> {
-          await Category.findOneAndUpdate({_id: item[0]}, 
-          {name: item[1], amount: item[2], spent: item[3]}, {new:true, upsert: true})
-      })
-      );
-      Category.find({}).then(async (existingDocs) => {
-        const existingDocId = existingDocs.map((item)=> item._id);
-        const missingId = existingDocId.filter(
-          (id) => !reqbodyId.includes(id)
-        )
-
-        const deletion = await Category.findOneAndDelete({_id: missingId[0]})
-
+        const deletion = await Category.findOneAndDelete({_id: req.body[0][0]})
         return res.status(200).json({data: deletion})
-      })
     }
       
   } catch(err){
