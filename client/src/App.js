@@ -241,7 +241,7 @@ function Delete( {value, index, callback, transcallback, savingsDelcallback, id,
       <button className="delete" onClick={(event)=>callback(event, index, id)}>X</button>
     )
     }
-  } else if(value[5] != undefined){
+  } else if(value[5] != undefined && value[4] != "savings"){
       return (
       <button className="delete" onClick={(event)=>transcallback(event, index, id)}>X</button>
     )
@@ -266,9 +266,10 @@ export default function App() {
   const [firstload, setFirstload] = useState(true)
   const [deleteBool, setDeletebool] = useState([false, []])
 
-  //savings = [id, name, budgetamount, total]
-  const [savings, setSavings] = useState(Array(1).fill(["1a2b3c", "", 0, 0, "savings"]));
-
+  const date = new Date();
+  const month = date.getMonth();
+  //savings = [id, name, budgetamount, total, datestamp]
+  const [savings, setSavings] = useState(Array(1).fill(["1a2b3c", "", 0, 0, "savings", month]));
 
   useEffect(()=> {
     console.log("load...")
@@ -306,7 +307,8 @@ export default function App() {
           data.savings[s].sname,
           data.savings[s].samount,
           data.savings[s].stotal,
-          data.savings[s].sss
+          data.savings[s].sss,
+          data.savings[s].sdate
         ]
       }
       setTransaction(transstuff)
@@ -405,13 +407,15 @@ if(!firstload && !deleteBool[0]){
     return boxvalstr;
   }
 
-  function calculateTotal(savings, boxv){
+  function calculateTotal(savingss, boxv){
     let total = 0;
+    let savingsT = savingss[3];
     for(let x in boxv){
       total += boxv[x][2]
     }
-    for(let z in savings){
-      total += savings[z][2]
+    for(let z in savingss){
+      total += savingss[z][2]
+      savingsT += savingss[z][2]
     }
     setTotal(total)
   }
@@ -496,7 +500,8 @@ if(!firstload && !deleteBool[0]){
             tempSavings[i][1],
             parseFloat(boxstr),
             tempSavings[i][3],
-            tempSavings[i][4]
+            tempSavings[i][4],
+            tempSavings[i][5]
           ]
           calculateTotal(tempSavings, nextBoxVal)
 
@@ -570,7 +575,10 @@ if(!firstload && !deleteBool[0]){
     const ranLet = abc[Math.floor(Math.random() * abc.length)]
     const ranLet2 = abc[Math.floor(Math.random() * abc.length)]
     const newId = ranNum + ranLet + ranNum2 + ranLet2;
-    const newArr = [newId, "", 0, 0, "savings"]
+    const date = new Date();
+    const month = date.getMonth();
+    console.log(month)
+    const newArr = [newId, "", 0, 0, "savings", month]
     setSavings([...savings, newArr])
   }
 
@@ -647,8 +655,10 @@ if(!firstload && !deleteBool[0]){
         console.log("deleting savings")
         const deleteItem = tempSavings.slice(s, s+1)
         tempSavings.splice(s, 1);
+        const date = new Date();
+        const month = date.getMonth()
         if(!tempSavings[0]){
-          tempSavings[0] = ["kljasdf", "", 0, 0, "savings"]
+          tempSavings[0] = ["kljasdf", "", 0, 0, "savings", month]
         }
         calculateTotal(tempSavings, tempBox)
         setDeletebool([true, deleteItem])
@@ -683,7 +693,8 @@ if(!firstload && !deleteBool[0]){
       val.target.value,
       tempSavings[index][2],
       tempSavings[index][3],
-      tempSavings[index][4]
+      tempSavings[index][4],
+      tempSavings[index][5]
     ] 
     setSavings(tempSavings)
   }
@@ -766,6 +777,12 @@ if(!firstload && !deleteBool[0]){
         <button className="newbutton" onClick={newRow}>
           New Row
         </button>
+      </div>
+      <div className="transaction-titles">
+          <p>Memo</p>
+          <p>Category</p>
+          <p>Expense</p>
+          <p>Income</p>
       </div>
       <div className="transactions">
         {transaction.map((event, index) => (

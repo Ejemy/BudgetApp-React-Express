@@ -20,7 +20,7 @@ const db = mongoose.createConnection(url, {useNewUrlParser: true, useUnifiedTopo
 
 var categorySchema = new mongoose.Schema({_id: String, name: String, amount: Number, spent: Number});
 var transactionSchema = new mongoose.Schema({_id: String, tname: String, date: Date, category: String, expense: Number, income: Number})
-var savingsSchema = new mongoose.Schema({_id: String, sname: String, samount: Number, stotal: Number, sss: String})
+var savingsSchema = new mongoose.Schema({_id: String, sname: String, samount: Number, stotal: Number, sss: String, sdate: Number})
 let Category = db.model("Category", categorySchema);
 let Transaction = db.model("Transaction", transactionSchema)
 let Savings = db.model("Savings", savingsSchema)
@@ -42,7 +42,7 @@ app.get("/load", async (req, res) => {
 
 app.post("/update", async (req, res) => {
   try{
-    if(req.body[0][5] != undefined){
+    if(req.body[0][5] && req.body[0][4] != "savings"){
       const updateAll = await Promise.all(
         req.body.map(async (item)=> {
           const update = await Transaction.findOneAndUpdate({_id: item[0]}, 
@@ -58,7 +58,7 @@ app.post("/update", async (req, res) => {
       const updateAll = await Promise.all(
         req.body.map(async (item)=> {
           const update = await Savings.findOneAndUpdate({_id: item[0]},
-            {sname: item[1], samount: item[2], stotal: item[3], sss: item[4]}, {new:true, upsert: true})
+            {sname: item[1], samount: item[2], stotal: item[3], sss: item[4], sdate:item[5]}, {new:true, upsert: true})
             return update;
         })
         );
@@ -92,7 +92,7 @@ app.post("/delete", async (req,res)=> {
   console.log("DELETE TEST", req.body)
   try {
     
-    if(req.body[0][5] != undefined){
+    if(req.body[0][5] != undefined && req.body[0][4] != "savings"){
         const deletion = await Transaction.findOneAndDelete({_id: req.body[0][0]})
         return res.status(200).json({data: deletion})
     } else if(req.body[0][4] === "savings"){

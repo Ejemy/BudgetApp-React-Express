@@ -41,7 +41,7 @@
   border: 1px black solid;
 }
 
-.budget-titles{
+.budget-titles, .transaction-titles{
   display: grid;
   grid-template-columns: 2fr 1fr 1fr auto;
   width: 60%;
@@ -71,7 +71,10 @@
   border: 1px black solid;
 }
 
-
+.transaction-titles{
+  grid-template-columns: 2fr 1.2fr 1fr 1fr;
+  width: 75%;
+}
 
 .categoryamount {
   grid-column-start: 2;
