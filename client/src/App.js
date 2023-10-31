@@ -132,7 +132,7 @@ function Savings( {data, index, handleDelete, savingsCallback, savingsname, sav}
         id = "savings"
         onChange={(event)=> savingsCallback(event, index, data[0])}        
       />
-      <div className="savings-total">{data[3]}</div>
+      <div className="savings-total">{"¥" + (data[3] + data[2]).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</div>
       <Delete 
       value={data}
       index = {index}
@@ -257,19 +257,19 @@ function Delete( {value, index, callback, transcallback, savingsDelcallback, id,
 }
 
 export default function App() {
+  const date = new Date();
+
   //boxvlue = [id, category, budgetamount, spent]
-  const [boxvalue, setBoxvalue] = useState(Array(1).fill(["abc123", "", 0, 0]));
-  const [total, setTotal] = useState(0);
+  const [boxvalue, setBoxvalue] = useState(Array(1).fill(["abc123", "", 0, 0, date]));
+  const [total, setTotal] = useState(0); //budgeted total i think
   //transaction = [id, name, date, category, expense, income]
   const [transaction, setTransaction] = useState(Array(1).fill(["123abc", "","", "", 0, 0]));
   //Backend
   const [firstload, setFirstload] = useState(true)
   const [deleteBool, setDeletebool] = useState([false, []])
 
-  const date = new Date();
-  const month = date.getMonth();
   //savings = [id, name, budgetamount, total, datestamp]
-  const [savings, setSavings] = useState(Array(1).fill(["1a2b3c", "", 0, 0, "savings", month]));
+  const [savings, setSavings] = useState(Array(1).fill(["1a2b3c", "", 0, 0, "savings", date]));
 
   useEffect(()=> {
     console.log("load...")
@@ -280,13 +280,33 @@ export default function App() {
       let stuff = boxvalue.slice()
       let transstuff = transaction.slice();
       let sav = savings.slice();
+      
+      const todaydate = new Date()
+      const todayDate = todaydate.getDate();
+      const todayMonth = todaydate.getMonth();
+
       for(let i in data.category){
-        stuff[i] = [
-          data.category[i]._id, 
-          data.category[i].name, 
-          data.category[i].amount, 
-          data.category[i].spent
-        ];
+        const bdate = new Date(data.category[i].bdate);
+        const bDate = bdate.getDate();
+        const bMonth = bdate.getMonth();
+        //UPDATE LATER when serious
+        if(todayMonth === bMonth + 1 && todayDate >= 1){
+          stuff[i] = [
+            data.category[i]._id,
+            data.category[i].name,
+            data.category[i].amount,
+            0,
+            todaydate,
+          ]
+        } else {
+          stuff[i] = [
+            data.category[i]._id, 
+            data.category[i].name, 
+            data.category[i].amount, 
+            data.category[i].spent,
+            data.category[i].bdate
+          ];
+        }
       }
       for(let x in data.transaction){
         if(!data.transaction[x].date){
@@ -301,16 +321,34 @@ export default function App() {
           data.transaction[x].income,
         ]
       }
+      //if past or is payday, samount should be 0 and stotal should be combined with samount
       for(let s in data.savings){
-        sav[s]=[
-          data.savings[s]._id,
-          data.savings[s].sname,
-          data.savings[s].samount,
-          data.savings[s].stotal,
-          data.savings[s].sss,
-          data.savings[s].sdate
+        const dbdate = new Date(data.savings[s].sdate)
+        const dbMonth = dbdate.getMonth();
+        //CHANGE to this when serious... todayMonth === dbMonth + 1 && todayDate >= 20
+        if(todayMonth === dbMonth + 1 && todayDate >= 1){
+          sav[s]=[
+            data.savings[s]._id,
+            data.savings[s].sname,
+            0,
+            data.savings[s].stotal + data.savings[s].samount,
+            data.savings[s].sss,
+            todaydate
+          ]
+        } else {
+          sav[s]=[
+            data.savings[s]._id,
+            data.savings[s].sname,
+            data.savings[s].samount,
+            data.savings[s].stotal,
+            data.savings[s].sss,
+            data.savings[s].sdate
         ]
+          
+        }
+        
       }
+      console.log("LOG savings", sav)
       setTransaction(transstuff)
       setSavings(sav)
       setBoxvalue(stuff)
@@ -409,16 +447,17 @@ if(!firstload && !deleteBool[0]){
 
   function calculateTotal(savingss, boxv){
     let total = 0;
-    let savingsT = savingss[3];
     for(let x in boxv){
       total += boxv[x][2]
     }
     for(let z in savingss){
-      total += savingss[z][2]
-      savingsT += savingss[z][2]
+      //add savings to budgeted total
+      total += savingss[z][2]    
+    
     }
     setTotal(total)
   }
+
 
   function handleInput(event, ind, id) {
     const nextBoxVal = boxvalue.slice();
@@ -479,7 +518,8 @@ if(!firstload && !deleteBool[0]){
             nextBoxVal[i][0],
             nextBoxVal[i][1],
             parseFloat(boxstr),
-            nextBoxVal[i][3]
+            nextBoxVal[i][3],
+            nextBoxVal[i][4]
           ];
         }
       }
@@ -487,9 +527,7 @@ if(!firstload && !deleteBool[0]){
     } else if(event.target.id === "savings"){
       //update savings amount
       for(let i = 0; i < tempSavings.length; i++){
-        console.log(tempSavings[i])
         if(tempSavings[i][0] === id){
-          console.log("savings:", tempSavings)
           const arr = [...val];
           const filterArr = [];
           const boxstr = modifyNum(arr, filterArr);
@@ -508,23 +546,36 @@ if(!firstload && !deleteBool[0]){
         }
       }
     }
-
+// Calculating SPENT in boxvalue
     for (let x = 0; x < nextBoxVal.length; x++) {
       let spent = 0;
+      const today = new Date();
+      const day = today.getDate();
+      const month = today.getMonth();
+    
+
+
       for (let ii = 0; ii < nextTransaction.length; ii++) {
+        const ttoday = new Date(nextTransaction[ii][2]);
+        const tday = ttoday.getDate();
+        const tmonth = ttoday.getMonth();
+        const payperiod = (month === tmonth + 1 && day >= 1)
+
         if (
           nextBoxVal[x][1] === nextTransaction[ii][3] &&
-          nextTransaction[ii][4] > 0
+          nextTransaction[ii][4] > 0 && 
+          !payperiod
         ) {
           spent += nextTransaction[ii][4];
         } else if (
           nextBoxVal[x][1] === nextTransaction[ii][3] &&
-          nextTransaction[ii][5] > 0
+          nextTransaction[ii][5] > 0 &&
+          !payperiod
         ) {
           spent -= nextTransaction[ii][5];
         }
       }
-      nextBoxVal[x] = [nextBoxVal[x][0], nextBoxVal[x][1], nextBoxVal[x][2], spent];
+      nextBoxVal[x] = [nextBoxVal[x][0], nextBoxVal[x][1], nextBoxVal[x][2], spent, nextBoxVal[x][4]];
 
     }
     setSavings(tempSavings)
@@ -576,9 +627,9 @@ if(!firstload && !deleteBool[0]){
     const ranLet2 = abc[Math.floor(Math.random() * abc.length)]
     const newId = ranNum + ranLet + ranNum2 + ranLet2;
     const date = new Date();
-    const month = date.getMonth();
-    console.log(month)
-    const newArr = [newId, "", 0, 0, "savings", month]
+    const day = date.getDate();
+    console.log(day)
+    const newArr = [newId, "", 0, 0, "savings", date]
     setSavings([...savings, newArr])
   }
 
@@ -610,13 +661,14 @@ if(!firstload && !deleteBool[0]){
   }
 
   function handleNewCat(){
+    const date = new Date();
     const abc = "abcdefghijklmnopqrstuvwxyz!#$%";
     const ranNum = Math.floor(Math.random()* 100);
     const ranNum2 = Math.floor(Math.random()* 100);
     const ranLet = abc[Math.floor(Math.random() * abc.length)]
     const ranLet2 = abc[Math.floor(Math.random() * abc.length)]
     const idVal = ranNum + ranLet + ranNum2 + ranLet2;
-    setBoxvalue([...boxvalue, [idVal, "", 0, 0]])
+    setBoxvalue([...boxvalue, [idVal, "", 0, 0, date]])
   }
 
   function handleDelete(val, index, id){
@@ -635,7 +687,7 @@ if(!firstload && !deleteBool[0]){
             const newincome = tempTrans[t][5]
             const boxspent = tempBox[x][3]
             const newspentbox = newincome - newspent + boxspent;
-            tempBox[x] = [tempBox[x][0], tempBox[x][1], tempBox[x][2], newspentbox];
+            tempBox[x] = [tempBox[x][0], tempBox[x][1], tempBox[x][2], newspentbox, tempBox[x][4]];
 
           }
         }
@@ -656,9 +708,9 @@ if(!firstload && !deleteBool[0]){
         const deleteItem = tempSavings.slice(s, s+1)
         tempSavings.splice(s, 1);
         const date = new Date();
-        const month = date.getMonth()
+        const day = date.getDate()
         if(!tempSavings[0]){
-          tempSavings[0] = ["kljasdf", "", 0, 0, "savings", month]
+          tempSavings[0] = ["kljasdf", "", 0, 0, "savings", date]
         }
         calculateTotal(tempSavings, tempBox)
         setDeletebool([true, deleteItem])
@@ -673,7 +725,7 @@ if(!firstload && !deleteBool[0]){
         tempBox.splice(i, 1)
 
         if(!tempBox[0]){
-          tempBox[0] = ["asjkldfklasdh", "", 0, 0]
+          tempBox[0] = ["asjkldfklasdh", "", 0, 0, date]
         }
         calculateTotal(tempSavings, tempBox)
         setDeletebool([true, deleteItem])
