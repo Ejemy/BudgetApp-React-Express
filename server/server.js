@@ -18,9 +18,9 @@ const url = process.env.MONGO_URI;
 
 const db = mongoose.createConnection(url, {useNewUrlParser: true, useUnifiedTopology: true})
 
-var categorySchema = new mongoose.Schema({_id: String, name: String, amount: Number, spent: Number});
+var categorySchema = new mongoose.Schema({_id: String, name: String, amount: Number, spent: Number, bdate: Date});
 var transactionSchema = new mongoose.Schema({_id: String, tname: String, date: Date, category: String, expense: Number, income: Number})
-var savingsSchema = new mongoose.Schema({_id: String, sname: String, samount: Number, stotal: Number, sss: String, sdate: Number})
+var savingsSchema = new mongoose.Schema({_id: String, sname: String, samount: Number, stotal: Number, sss: String, sdate: Date})
 let Category = db.model("Category", categorySchema);
 let Transaction = db.model("Transaction", transactionSchema)
 let Savings = db.model("Savings", savingsSchema)
@@ -64,12 +64,12 @@ app.post("/update", async (req, res) => {
         );
       return res.status(200).json({data: updateAll})
     }
-    else if(req.body[0][4] === undefined){
+    else if(req.body[0][5] === undefined){
       console.log("UPDATING BUDGET", req.body)
       const updateAll= await Promise.all(
         req.body.map(async (item)=> {
           const update =  await Category.findOneAndUpdate({_id: item[0]}, 
-          {name: item[1], amount: item[2], spent: item[3]}, {new:true, upsert: true})
+          {name: item[1], amount: item[2], spent: item[3], bdate: item[4]}, {new:true, upsert: true})
           return update;
       })
       );
