@@ -326,10 +326,7 @@ export default function App() {
   const [deleteBool, setDeletebool] = useState([false, []])
 
   //savings = [id, name, budgetamount, total, datestamp]
-  const [savings, setSavings] = useState(Array(1).fill(["1a2b3c", "", 0, 0, "savings", date]));
-
-  //Auto Transactions = [id, date, category, expense, income , type]
-  const [autoTrans, setAutotrans] = useState(Array(1).fill(["ntb3uitoshf", "", "", 0, 0, "auto"]))
+  const [savings, setSavings] = useState(Array(1).fill(["1a2b3c", "", 0, 0, "savings", day]));
 
   useEffect(()=> {
     console.log("load...")
@@ -340,33 +337,13 @@ export default function App() {
       let stuff = boxvalue.slice()
       let transstuff = transaction.slice();
       let sav = savings.slice();
-      let aut = autoTrans.slice();
-      
-      const todaydate = new Date()
-      const todayDate = todaydate.getDate();
-      const todayMonth = todaydate.getMonth();
-
       for(let i in data.category){
-        const bdate = new Date(data.category[i].bdate);
-        const bMonth = bdate.getMonth();
-        //UPDATE LATER when serious
-        if(todayMonth === bMonth + 1 && todayDate >= 20){
-          stuff[i] = [
-            data.category[i]._id,
-            data.category[i].name,
-            data.category[i].amount,
-            0,
-            todaydate,
-          ]
-        } else {
-          stuff[i] = [
-            data.category[i]._id, 
-            data.category[i].name, 
-            data.category[i].amount, 
-            data.category[i].spent,
-            data.category[i].bdate
-          ];
-        }
+        stuff[i] = [
+          data.category[i]._id, 
+          data.category[i].name, 
+          data.category[i].amount, 
+          data.category[i].spent
+        ];
       }
       for(let x in data.transaction){
         if(!data.transaction[x].date){
@@ -383,42 +360,15 @@ export default function App() {
       }
       //if past or is payday, samount should be 0 and stotal should be combined with samount
       for(let s in data.savings){
-        const dbdate = new Date(data.savings[s].sdate)
-        const dbMonth = dbdate.getMonth();
-        //CHANGE to this when serious... todayMonth === dbMonth + 1 && todayDate >= 20
-        if(todayMonth === dbMonth + 1 && todayDate >= 20){
-          sav[s]=[
-            data.savings[s]._id,
-            data.savings[s].sname,
-            0,
-            data.savings[s].stotal + data.savings[s].samount,
-            data.savings[s].sss,
-            todaydate
-          ]
-        } else {
-          sav[s]=[
-            data.savings[s]._id,
-            data.savings[s].sname,
-            data.savings[s].samount,
-            data.savings[s].stotal,
-            data.savings[s].sss,
-            data.savings[s].sdate
-        ]
-          
-        }
-      }
-      for(let p in data.auto){
-        aut[p] = [
-          data.auto[p]._id,
-          data.auto[p].adate,
-          data.auto[p].acategory,
-          data.auto[p].aexpense,
-          data.auto[p].aincome,
-          data.auto[p].aaa
+        sav[s]=[
+          data.savings[s]._id,
+          data.savings[s].sname,
+          data.savings[s].samount,
+          data.savings[s].stotal,
+          data.savings[s].sss,
+          data.savings[s].sdate
         ]
       }
-
-      
       console.log("LOG savings", sav)
       setTransaction(transstuff)
       setSavings(sav)
