@@ -205,6 +205,63 @@ function Row({
   );
 }
 
+
+function AutoRow({
+  autotransData,
+  boxvalue,
+  handleCatOption,
+  inputCallback,
+  nameCallback,
+  handleDate,
+  handleDelete
+}) {
+  return (
+    <div className="row-transaction">
+      <input 
+      placeholder="When?" 
+      className="date"
+      id="autoRowDate"
+      onChange=""
+      />
+      <input
+        placeholder="Memo"
+        className="trans-name"
+        value = {data[1]}
+        onChange={(eventData) => nameCallback(eventData, index, data[0])}
+      />
+      <TransCat
+        categories={boxvalue}
+        data = {data}
+        change={(extra) => handleCatOption(extra, index, data[0])}
+      />
+      <input
+        placeholder="Expenditure"
+        className="expend"
+        id="out"
+        value = {"¥" + data[4].toLocaleString()}
+        onChange={(eventData) => inputCallback(eventData, index, data[0])}
+      />
+      <input
+        placeholder="Income"
+        className="income"
+        id="in"
+        value = {"¥" + data[5].toLocaleString()}
+        onChange={(eventData) => inputCallback(eventData, index, data[0])}
+      />
+      <Delete 
+        value = {data}
+        index = {index}
+        key = {index}
+        id = {data[0]}
+        transcallback = {(stuff) => {
+          handleDelete(stuff,  index, data[0])
+        }}
+      />
+    </div>
+  );
+}
+
+
 function Totals({ tots, transaction }){
   let expense = 0;
   let income = 0;
@@ -271,6 +328,9 @@ export default function App() {
   //savings = [id, name, budgetamount, total, datestamp]
   const [savings, setSavings] = useState(Array(1).fill(["1a2b3c", "", 0, 0, "savings", date]));
 
+  //Auto Transactions = [id, date, category, expense, income , type]
+  const [autoTrans, setAutotrans] = useState(Array(1).fill(["ntb3uitoshf", "", "", 0, 0, "auto"]))
+
   useEffect(()=> {
     console.log("load...")
     fetch("/load")
@@ -280,6 +340,7 @@ export default function App() {
       let stuff = boxvalue.slice()
       let transstuff = transaction.slice();
       let sav = savings.slice();
+      let aut = autoTrans.slice();
       
       const todaydate = new Date()
       const todayDate = todaydate.getDate();
@@ -287,7 +348,6 @@ export default function App() {
 
       for(let i in data.category){
         const bdate = new Date(data.category[i].bdate);
-        const bDate = bdate.getDate();
         const bMonth = bdate.getMonth();
         //UPDATE LATER when serious
         if(todayMonth === bMonth + 1 && todayDate >= 20){
@@ -346,11 +406,23 @@ export default function App() {
         ]
           
         }
-        
       }
+      for(let p in data.auto){
+        aut[p] = [
+          data.auto[p]._id,
+          data.auto[p].adate,
+          data.auto[p].acategory,
+          data.auto[p].aexpense,
+          data.auto[p].aincome,
+          data.auto[p].aaa
+        ]
+      }
+
+      
       console.log("LOG savings", sav)
       setTransaction(transstuff)
       setSavings(sav)
+      setAutotrans(aut)
       setBoxvalue(stuff)
       calculateTotal(sav, stuff)
       setFirstload(false)
@@ -429,6 +501,29 @@ if(!firstload && !deleteBool[0]){
     }
     
   }, [savings])
+
+  useEffect(()=> {
+    if(!firstload && !deleteBool[0]){
+      console.log("autotrans state", autoTrans)
+      fetch("/update", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(autoTrans)})
+        .then(response=> response.json())
+        .then(
+          data=> {
+            console.log("app.js autotrans fetch: ", data)
+          }
+        )
+    } else if(deleteBool[0]){
+      fetch("/delete", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(deleteBool[1])})
+      .then(response=> response.json())
+      .then(
+        data=> {
+           console.log("app.js Autoo DELETE fetch: ", data)
+        }
+      )
+      setDeletebool([false, []])
+    }
+    
+  }, [autoTrans])
   
 
  
@@ -767,6 +862,17 @@ if(!firstload && !deleteBool[0]){
           })()
         }
         </h1>
+      </div>
+      <div className="autoTransaction">
+        <AutoRow
+          autotransData={transaction}
+          boxvalue={boxvalue}
+          handleCatOption={handleCatOption}
+          inputCallback={(x, y, z) => handleInput(x, y, z)}
+          nameCallback={(x, y, z) => transName(x, y, z)}
+          handleDate = {(x,y, z)=> handleDate(x,y, z)}
+          handleDelete = {handleDelete}
+        />
       </div>
       <div className="total-amount" id="total">
           <Totals 

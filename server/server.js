@@ -3,6 +3,7 @@ require("dotenv").config();
 const {MongoClient} = require("mongodb");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
+const { restart } = require("nodemon");
 
 
 const app = express();
@@ -21,16 +22,19 @@ const db = mongoose.createConnection(url, {useNewUrlParser: true, useUnifiedTopo
 var categorySchema = new mongoose.Schema({_id: String, name: String, amount: Number, spent: Number, bdate: Date});
 var transactionSchema = new mongoose.Schema({_id: String, tname: String, date: Date, category: String, expense: Number, income: Number})
 var savingsSchema = new mongoose.Schema({_id: String, sname: String, samount: Number, stotal: Number, sss: String, sdate: Date})
+var autoTranSchema = new mongoose.Schema({_id: String, adate: Number, acategory: String, aexpense: Number, aincome: Number, aaa: String})
 let Category = db.model("Category", categorySchema);
 let Transaction = db.model("Transaction", transactionSchema)
 let Savings = db.model("Savings", savingsSchema)
+let Autotrans = db.model("Autotrans", autoTranSchema)
 
 app.get("/load", async (req, res) => {
   try {
     const data = await Category.find({})
     const transD = await Transaction.find({})
     const savingsD = await Savings.find({})
-    const combinedData = {category: data, transaction: transD, savings: savingsD}
+    const autoD = await Autotrans.find({})
+    const combinedData = {category: data, transaction: transD, savings: savingsD, auto: autoD}
     return res.json(combinedData);
    
   } catch (err) {
@@ -52,6 +56,16 @@ app.post("/update", async (req, res) => {
       )
       
       return res.status(200).json({data: updateAll})
+
+  } else if(req.body[0][5] === "auto"){
+    const updateAll = await Promise.all(
+      req.body.map(async (item) => {
+        const update = await Autotrans.findOneAndUpdate({_id: item[0]},
+          {adate: item[1], acategory: item[2], aexpense: item[3], aincome: item[4], aaa: item[5]}, {new:true, upsert: true})
+          return update;
+      })
+    )
+    return res.status(200).json({data: updateAll})
   }
     else if(req.body[0][4] === "savings"){
       console.log("updating SAVINGS", req.body)
