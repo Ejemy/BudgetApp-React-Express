@@ -22,6 +22,7 @@ const db = mongoose.createConnection(url, {useNewUrlParser: true, useUnifiedTopo
 var categorySchema = new mongoose.Schema({_id: String, name: String, amount: Number, spent: Number, bdate: Date});
 var transactionSchema = new mongoose.Schema({_id: String, tname: String, date: Date, category: String, expense: Number, income: Number})
 var savingsSchema = new mongoose.Schema({_id: String, sname: String, samount: Number, stotal: Number, sss: String, sdate: Number})
+var autoTranSchema = new mongoose.Schema({_id: String, adate: Number, acategory: String, aexpense: Number, aincome: Number, aaa: String})
 let Category = db.model("Category", categorySchema);
 let Transaction = db.model("Transaction", transactionSchema)
 let Savings = db.model("Savings", savingsSchema)
