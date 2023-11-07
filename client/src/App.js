@@ -223,40 +223,26 @@ function AutoRow({
       id="autoRowDate"
       onChange=""
       />
-      <input
-        placeholder="Memo"
-        className="trans-name"
-        value = {data[1]}
-        onChange={(eventData) => nameCallback(eventData, index, data[0])}
-      />
       <TransCat
         categories={boxvalue}
-        data = {data}
+        data = {autotransData}
         change={(extra) => handleCatOption(extra, index, data[0])}
       />
       <input
         placeholder="Expenditure"
         className="expend"
         id="out"
-        value = {"¥" + data[4].toLocaleString()}
+        value = {"¥" + autotransData[3]}
         onChange={(eventData) => inputCallback(eventData, index, data[0])}
       />
       <input
         placeholder="Income"
         className="income"
         id="in"
-        value = {"¥" + data[5].toLocaleString()}
+        value = {"¥" + autotransData[4]}
         onChange={(eventData) => inputCallback(eventData, index, data[0])}
       />
-      <Delete 
-        value = {data}
-        index = {index}
-        key = {index}
-        id = {data[0]}
-        transcallback = {(stuff) => {
-          handleDelete(stuff,  index, data[0])
-        }}
-      />
+     
     </div>
   );
 }
@@ -326,7 +312,9 @@ export default function App() {
   const [deleteBool, setDeletebool] = useState([false, []])
 
   //savings = [id, name, budgetamount, total, datestamp]
-  const [savings, setSavings] = useState(Array(1).fill(["1a2b3c", "", 0, 0, "savings", day]));
+  const [savings, setSavings] = useState(Array(1).fill(["1a2b3c", "", 0, 0, "savings", date]));
+  //auto transactions = [id, dateday, category, expense, income, "aaa"]
+  const [autoTrans, setAutotrans] = useState(Array(1).fill(["", 0, "", 0, 0, "aaa"]))
 
   useEffect(()=> {
     console.log("load...")
@@ -337,13 +325,34 @@ export default function App() {
       let stuff = boxvalue.slice()
       let transstuff = transaction.slice();
       let sav = savings.slice();
+      let aut = autoTrans.slice();
+
+      const todaydate = new Date()
+      const todayDate = todaydate.getDate();
+      const todayMonth = todaydate.getMonth();
+
       for(let i in data.category){
-        stuff[i] = [
-          data.category[i]._id, 
-          data.category[i].name, 
-          data.category[i].amount, 
-          data.category[i].spent
-        ];
+        const bdate = new Date(data.category[i].bdate);
+        const bDate = bdate.getDate();
+        const bMonth = bdate.getMonth();
+        //UPDATE LATER when serious
+        if(todayMonth === bMonth + 1 && todayDate >= 20){
+          stuff[i] = [
+            data.category[i]._id,
+            data.category[i].name,
+            data.category[i].amount,
+            0,
+            todaydate,
+          ]
+        } else {
+          stuff[i] = [
+            data.category[i]._id, 
+            data.category[i].name, 
+            data.category[i].amount, 
+            data.category[i].spent,
+            data.category[i].bdate
+          ];
+        }
       }
       for(let x in data.transaction){
         if(!data.transaction[x].date){
@@ -360,15 +369,42 @@ export default function App() {
       }
       //if past or is payday, samount should be 0 and stotal should be combined with samount
       for(let s in data.savings){
-        sav[s]=[
-          data.savings[s]._id,
-          data.savings[s].sname,
-          data.savings[s].samount,
-          data.savings[s].stotal,
-          data.savings[s].sss,
-          data.savings[s].sdate
+        const dbdate = new Date(data.savings[s].sdate)
+        const dbMonth = dbdate.getMonth();
+        //CHANGE to this when serious... todayMonth === dbMonth + 1 && todayDate >= 20
+        if(todayMonth === dbMonth + 1 && todayDate >= 20){
+          sav[s]=[
+            data.savings[s]._id,
+            data.savings[s].sname,
+            0,
+            data.savings[s].stotal + data.savings[s].samount,
+            data.savings[s].sss,
+            todaydate
+          ]
+        } else {
+          sav[s]=[
+            data.savings[s]._id,
+            data.savings[s].sname,
+            data.savings[s].samount,
+            data.savings[s].stotal,
+            data.savings[s].sss,
+            data.savings[s].sdate
+        ]
+
+        }
+      for(let a in data.auto){
+        aut[a] = [
+          data.auto[a]._id,
+          data.auto[a].adate,
+          data.auto[a].acategory,
+          data.auto[a].aexpense,
+          data.auto[a].aincome,
+          data.auto[a].aaa
         ]
       }
+      }
+
+
       console.log("LOG savings", sav)
       setTransaction(transstuff)
       setSavings(sav)
@@ -815,7 +851,7 @@ if(!firstload && !deleteBool[0]){
       </div>
       <div className="autoTransaction">
         <AutoRow
-          autotransData={transaction}
+          autotransData={autoTrans}
           boxvalue={boxvalue}
           handleCatOption={handleCatOption}
           inputCallback={(x, y, z) => handleInput(x, y, z)}
