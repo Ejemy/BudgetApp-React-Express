@@ -50,12 +50,17 @@ function NewBox({ handleClick, title, id }) {
 }
 
 function TransCat({ categories, change, index, data }) {
-  
+  let theData;
+  if(data[5] == "aaa"){
+    theData = data[2]
+  } else {
+    theData = data[3]
+  }
   return (
     <select
       name="dropdown"
       className="options"
-      value= {data[3]}
+      value= {theData}
       onChange={(event) => change(event, index)}
     >
       <option value = "1" className="firstoption"></option>
@@ -150,6 +155,7 @@ function Savings( {data, index, handleDelete, savingsCallback, savingsname, sav}
 function Row({
   index,
   data,
+  tran,
   boxvalue,
   handleCatOption,
   inputCallback,
@@ -176,7 +182,7 @@ function Row({
       <TransCat
         categories={boxvalue}
         data = {data}
-        change={(extra) => handleCatOption(extra, index, data[0])}
+        change={(extra) => handleCatOption(extra, index, data[0], "trans")}
       />
       <input
         placeholder="Expenditure"
@@ -197,6 +203,7 @@ function Row({
         index = {index}
         key = {index}
         id = {data[0]}
+        tran = {tran}
         transcallback = {(stuff) => {
           handleDelete(stuff,  index, data[0])
         }}
@@ -207,40 +214,56 @@ function Row({
 
 
 function AutoRow({
+  data,
+  index,
   autotransData,
   boxvalue,
+  saveAuto,
   handleCatOption,
   inputCallback,
-  nameCallback,
-  handleDate,
+  handleSave,
   handleDelete
 }) {
   return (
     <div className="row-transaction">
       <input 
-      placeholder="When?" 
+      type="date"
       className="date"
+      value= {data[1]}
       id="autoRowDate"
-      onChange=""
+      onChange={(eventData) => saveAuto(eventData, data, index)}
       />
       <TransCat
         categories={boxvalue}
-        data = {autotransData}
-        change={(extra) => handleCatOption(extra, index, data[0])}
+        data = {data}
+        change={(extra) => handleCatOption(extra, index, data[0], "auto")}
       />
       <input
         placeholder="Expenditure"
         className="expend"
-        id="out"
-        value = {"¥" + autotransData[3]}
+        id="autoout"
+        value = {"¥" + data[3].toLocaleString()}
         onChange={(eventData) => inputCallback(eventData, index, data[0])}
       />
       <input
         placeholder="Income"
         className="income"
-        id="in"
-        value = {"¥" + autotransData[4]}
+        id="autoin"
+        value = {"¥" + data[4].toLocaleString()}
         onChange={(eventData) => inputCallback(eventData, index, data[0])}
+      />
+      <button
+        onClick={(stuff) => {handleSave(stuff, index, data)}}
+      >Save</button>
+      <Delete 
+        value = {data}
+        index = {index}
+        key = {index}
+        id = {data[0]}
+        auto = {autotransData}
+        autocallback = {(stuff) => {
+          handleDelete(stuff,  index, data[0])
+        }}
       />
      
     </div>
@@ -277,21 +300,31 @@ function Totals({ tots, transaction }){
   )
 }
 
-function Delete( {value, index, callback, transcallback, savingsDelcallback, id, boxv, sav} ){
+function Delete( {value, index, callback, transcallback, savingsDelcallback, id, boxv, sav, auto, tran, autocallback} ){
   if(boxv != undefined){
     if(boxv.flat().filter(i=>i===id)){
       return (
       <button className="delete" onClick={(event)=>callback(event, index, id)}>X</button>
     )
     }
-  } else if(value[5] != undefined && value[4] != "savings"){
+  } else if(tran != undefined){
+    if(tran.flat().filter(i=>i===id)){
       return (
       <button className="delete" onClick={(event)=>transcallback(event, index, id)}>X</button>
-    )
+      )
+    }
+      
+    
     } else if(sav != undefined){
       if(sav.flat().filter(i=>i===id)){
         return (
           <button className="delete" onClick={(event)=>savingsDelcallback(event,index,id)}>X</button>
+        )
+      }
+    } else if(auto != undefined){
+      if(auto.flat().filter(i=>i===id)){
+        return (
+          <button className="delete" onClick={(event)=>autocallback(event,index,id)}>X</button>
         )
       }
     }
@@ -314,7 +347,7 @@ export default function App() {
   //savings = [id, name, budgetamount, total, datestamp]
   const [savings, setSavings] = useState(Array(1).fill(["1a2b3c", "", 0, 0, "savings", date]));
   //auto transactions = [id, dateday, category, expense, income, "aaa"]
-  const [autoTrans, setAutotrans] = useState(Array(1).fill(["", 0, "", 0, 0, "aaa"]))
+  const [autoTrans, setAutotrans] = useState(Array(1).fill(["xyz123", "", "", 0, 0, "aaa"]))
 
   useEffect(()=> {
     console.log("load...")
@@ -336,7 +369,10 @@ export default function App() {
         const bDate = bdate.getDate();
         const bMonth = bdate.getMonth();
         //UPDATE LATER when serious
-        if(todayMonth === bMonth + 1 && todayDate >= 20){
+        const payday1 = todayMonth === bMonth + 1 && todayDate < 20
+        const payday2 = todayMonth === bMonth && todayDate >= 20
+        const payday = payday1 || payday2
+        if(payday){
           stuff[i] = [
             data.category[i]._id,
             data.category[i].name,
@@ -371,8 +407,11 @@ export default function App() {
       for(let s in data.savings){
         const dbdate = new Date(data.savings[s].sdate)
         const dbMonth = dbdate.getMonth();
-        //CHANGE to this when serious... todayMonth === dbMonth + 1 && todayDate >= 20
-        if(todayMonth === dbMonth + 1 && todayDate >= 20){
+        //my payday is the 20th
+        const payday1 = todayMonth === dbMonth + 1 && todayDate < 20
+        const payday2 = todayMonth === dbMonth && todayDate >= 20
+        const payday = payday1 || payday2
+        if(payday){
           sav[s]=[
             data.savings[s]._id,
             data.savings[s].sname,
@@ -392,20 +431,46 @@ export default function App() {
         ]
 
         }
+      
+      }
       for(let a in data.auto){
+        let checky = true;
+        let dd = new Date(data.auto[a].adate)
+        dd = dd.toISOString();
+        dd = dd.slice(0,10)
         aut[a] = [
           data.auto[a]._id,
-          data.auto[a].adate,
+          dd,
           data.auto[a].acategory,
           data.auto[a].aexpense,
           data.auto[a].aincome,
           data.auto[a].aaa
         ]
-      }
+
+        //my payday is the 20th
+        for(let i in data.transaction){
+          const tdate = new Date(data.transaction[i].date);
+          const tmonth = tdate.getMonth();
+          const tday = tdate.getDate();
+          const payday1 = todayMonth === tmonth + 1 && todayDate <= tday
+          const payday2 = todayMonth === tmonth && todayDate > tday
+          const payday = payday1 || payday2
+          console.log(payday)
+          if(data.auto[a].acategory === data.transaction[i].category && 
+            payday){
+              checky = false;
+              break;
+            }
+        }
+        if(checky){
+          console.log("START")
+          transstuff.push(addNewAuto(data.auto[a]))
+          
+        }
       }
 
+      
 
-      console.log("LOG savings", sav)
       setTransaction(transstuff)
       setSavings(sav)
       setAutotrans(aut)
@@ -545,6 +610,8 @@ if(!firstload && !deleteBool[0]){
     let val = event.target.value;
     const nextTransaction = transaction.slice();
     const tempSavings = savings.slice();
+    const tempAuto = autoTrans.slice();
+    console.log("event id", event.target.id)
     //out transactions
     if (event.target.id === "out") {
       console.log("ID", id)
@@ -626,6 +693,44 @@ if(!firstload && !deleteBool[0]){
 
         }
       }
+    } else if(event.target.id === "autoout"){
+      for(let a in tempAuto){
+        if(tempAuto[a][0] === id){
+          const arr = [...val];
+          const filterArr = [];
+          const boxstr = modifyNum(arr, filterArr);
+          const str = boxstr.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+          event.target.value = "¥" + str;
+
+          tempAuto[a] = [
+            tempAuto[a][0],
+            tempAuto[a][1],
+            tempAuto[a][2],
+            parseFloat(boxstr),
+            tempAuto[a][4],
+            tempAuto[a][5],
+          ]
+        }
+      }
+    } else if(event.target.id === "autoin"){
+      for(let a in tempAuto){
+        if(tempAuto[a][0] === id){
+          const arr = [...val];
+          const filterArr = [];
+          const boxstr = modifyNum(arr, filterArr);
+          const str = boxstr.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+          event.target.value = "¥" + str;
+
+          tempAuto[a] = [
+            tempAuto[a][0],
+            tempAuto[a][1],
+            tempAuto[a][2],
+            tempAuto[a][3],
+            parseFloat(boxstr),
+            tempAuto[a][5],
+          ]
+        }
+      }
     }
 // Calculating SPENT in boxvalue
     for (let x = 0; x < nextBoxVal.length; x++) {
@@ -640,18 +745,19 @@ if(!firstload && !deleteBool[0]){
         const ttoday = new Date(nextTransaction[ii][2]);
         const tday = ttoday.getDate();
         const tmonth = ttoday.getMonth();
-        const payperiod = (month === tmonth + 1 && day >= 1)
-
+        const pp1 = tmonth === month - 1 && tday >= 20; //is transaction dated after the 20th of last month or before the 20th of this month?
+        const pp2 = tmonth === month && tday < 20;
+        const payperiod = pp1 || pp2;
         if (
-          nextBoxVal[x][1] === nextTransaction[ii][3] &&
+          nextBoxVal[x][1] === nextTransaction[ii][3] && //if categories match, expense is present, and
           nextTransaction[ii][4] > 0 && 
-          !payperiod
+          payperiod
         ) {
           spent += nextTransaction[ii][4];
         } else if (
-          nextBoxVal[x][1] === nextTransaction[ii][3] &&
+          nextBoxVal[x][1] === nextTransaction[ii][3] && //if categories match, income present, and
           nextTransaction[ii][5] > 0 &&
-          !payperiod
+          payperiod
         ) {
           spent -= nextTransaction[ii][5];
         }
@@ -662,23 +768,25 @@ if(!firstload && !deleteBool[0]){
     setSavings(tempSavings)
     setBoxvalue(nextBoxVal);
     setTransaction(nextTransaction);
+    setAutotrans(tempAuto)
   }
 
   function handleCatName(event, ind, id) {
     const nextBox = boxvalue.slice();
     for (let i = 0; i < nextBox.length; i++) {
       if (nextBox[i][0] === id) {
-        nextBox[i] = [id, event.target.value, nextBox[i][2], nextBox[i][3]];
+        nextBox[i] = [id, event.target.value, nextBox[i][2], nextBox[i][3], nextBox[i][4]];
       }
     }
     setBoxvalue(nextBox);
 
   }
 
-  function handleCatOption(event, index, id) {
+  function handleCatOption(event, index, id, which) {
     const tempTransaction = transaction.slice();
-
-    tempTransaction[index] = [
+    const tempAuto = autoTrans.slice();
+    if(which === "trans"){
+      tempTransaction[index] = [
       tempTransaction[index][0],
       tempTransaction[index][1],
       tempTransaction[index][2],
@@ -687,6 +795,18 @@ if(!firstload && !deleteBool[0]){
       tempTransaction[index][5]
     ];
     setTransaction(tempTransaction);
+    } else{
+      tempAuto[index] = [
+        tempAuto[index][0],
+        tempAuto[index][1],
+        event.target.value,
+        tempAuto[index][3],
+        tempAuto[index][4],
+        tempAuto[index][5],
+      ];
+      setAutotrans(tempAuto)
+    }
+    
   }
 
   function newRow() {
@@ -756,6 +876,7 @@ if(!firstload && !deleteBool[0]){
     const tempBox = boxvalue.slice();
     const tempTrans = transaction.slice();
     const tempSavings = savings.slice();
+    const tempAuto = autoTrans.slice();
 
     for(let t in tempTrans){
       if(tempTrans[t][0] === id){
@@ -814,6 +935,19 @@ if(!firstload && !deleteBool[0]){
 
       }
     }
+    for(let i in tempAuto){
+      if(tempAuto[i][0] === id){
+        console.log("Deleting autotransaction...")
+        const deleteItem = tempAuto.slice(i, i+1);
+        tempAuto.splice(i,1)
+
+        if(!tempAuto[0]){
+          tempAuto[0] = ["xyz321", "", "", 0, 0, "aaa"]
+        }
+        setDeletebool([true, deleteItem])
+        setAutotrans(tempAuto)
+      }
+    }
     
     
   }
@@ -831,6 +965,84 @@ if(!firstload && !deleteBool[0]){
     ] 
     setSavings(tempSavings)
   }
+
+
+
+  function saveAuto(event, data, index){
+    const tempAuto = autoTrans.slice();
+    console.log(event.target.value)
+    for(let i in tempAuto){
+      if(tempAuto[i][0] === data[0]){
+        tempAuto[i] = [
+          tempAuto[i][0],
+          event.target.value,
+          tempAuto[i][2],
+          tempAuto[i][3],
+          tempAuto[i][4],
+          tempAuto[i][5]
+        ]
+      }
+    }
+    
+    setAutotrans(tempAuto);
+  }
+
+  function addNewAuto(data){
+    const abc = "abcdefghijklmnopqrstuvwxyz!#$%";
+    const ranNum = Math.floor(Math.random()* 100);
+    const ranNum2 = Math.floor(Math.random()* 100);
+    const ranLet = abc[Math.floor(Math.random() * abc.length)]
+    const ranLet2 = abc[Math.floor(Math.random() * abc.length)]
+    const newId = ranNum + ranLet + ranNum2 + ranLet2;
+    const today = new Date();
+    let ddd = new Date(data.adate)
+    console.log("DDDDDDD", data.adate)
+    ddd = ddd.toISOString()
+    ddd = ddd.slice(0,10)
+    const newArr = [newId, "",ddd ,data.acategory,data.aexpense,data.aincome, "aaa"];
+
+    return newArr
+  }
+
+  function handleSave(stuff, index, data){
+    console.log("handleSAVE", data)
+    const tempTrans = transaction.slice();
+    const dbdate = new Date(data[1])
+    const dbMonth = dbdate.getMonth();
+    //my payday is the 20th
+    let checky = true;
+    for(let i in tempTrans){
+      const tdate = new Date(tempTrans[i][2]);
+      const tday = tdate.getDate();
+      const tmonth = tdate.getMonth();
+      const payday1 = tmonth === dbMonth + 1 && tday < 20
+      const payday2 = tmonth === dbMonth && tday >= 20
+      const payday = payday1 || payday2
+      console.log(payday, (tempTrans[i][3]),data[2] )
+
+      if(payday && tempTrans[i][3] === data[2]){
+        checky = false;
+        console.log("checky false now")
+        break;
+      } 
+    }
+    if(checky){
+      console.log("save button checky")
+      const newdate = new Date(data[1])
+      const ddata = {
+        _id: data[0],
+        adate: newdate,
+        acategory: data[2],
+        aexpense: data[3],
+        aincome: data[4],
+        aaa: data[5]
+      }
+      setTransaction([...transaction, addNewAuto(ddata)])
+    }
+  }
+
+
+  
 
   return (
     <div className="App">
@@ -850,15 +1062,24 @@ if(!firstload && !deleteBool[0]){
         </h1>
       </div>
       <div className="autoTransaction">
-        <AutoRow
+        {autoTrans.map((value, index) => 
+          (
+          <AutoRow
+          data={value}
+          index={index}
           autotransData={autoTrans}
           boxvalue={boxvalue}
           handleCatOption={handleCatOption}
+          saveAuto={(x,y, z) => saveAuto(x,y,z)}
           inputCallback={(x, y, z) => handleInput(x, y, z)}
           nameCallback={(x, y, z) => transName(x, y, z)}
           handleDate = {(x,y, z)=> handleDate(x,y, z)}
           handleDelete = {handleDelete}
+          handleSave={(x,y,z) => handleSave(x,y,z)}
         />
+          )
+        )}
+        
       </div>
       <div className="total-amount" id="total">
           <Totals 
@@ -933,6 +1154,7 @@ if(!firstload && !deleteBool[0]){
           <Row
             index={index}
             data={event}
+            tran={transaction}
             boxvalue={boxvalue}
             handleCatOption={handleCatOption}
             inputCallback={(x, y, z) => handleInput(x, y, z)}

@@ -19,10 +19,10 @@ const url = process.env.MONGO_URI;
 
 const db = mongoose.createConnection(url, {useNewUrlParser: true, useUnifiedTopology: true})
 
-var categorySchema = new mongoose.Schema({_id: String, name: String, amount: Number, spent: Number, bdate: Date});
+var categorySchema = new mongoose.Schema({_id: String, name: String, amount: Number, spent: Number, bdate: String});
 var transactionSchema = new mongoose.Schema({_id: String, tname: String, date: Date, category: String, expense: Number, income: Number})
 var savingsSchema = new mongoose.Schema({_id: String, sname: String, samount: Number, stotal: Number, sss: String, sdate: Number})
-var autoTranSchema = new mongoose.Schema({_id: String, adate: Number, acategory: String, aexpense: Number, aincome: Number, aaa: String})
+var autoTranSchema = new mongoose.Schema({_id: String, adate: Date, acategory: String, aexpense: Number, aincome: Number, aaa: String})
 let Category = db.model("Category", categorySchema);
 let Transaction = db.model("Transaction", transactionSchema)
 let Savings = db.model("Savings", savingsSchema)
@@ -46,7 +46,8 @@ app.get("/load", async (req, res) => {
 
 app.post("/update", async (req, res) => {
   try{
-    if(req.body[0][5] && req.body[0][4] != "savings"){
+    if(req.body[0][5] && req.body[0][4] != "savings" && req.body[0][5] != "aaa"){
+      console.log("updating TRANSACTIONS", req.body)
       const updateAll = await Promise.all(
         req.body.map(async (item)=> {
           const update = await Transaction.findOneAndUpdate({_id: item[0]}, 
@@ -57,7 +58,8 @@ app.post("/update", async (req, res) => {
       
       return res.status(200).json({data: updateAll})
 
-  } else if(req.body[0][5] === "auto"){
+  } else if(req.body[0][5] === "aaa"){
+    console.log("updating AUTO", req.body)
     const updateAll = await Promise.all(
       req.body.map(async (item) => {
         const update = await Autotrans.findOneAndUpdate({_id: item[0]},
@@ -106,11 +108,15 @@ app.post("/delete", async (req,res)=> {
   console.log("DELETE TEST", req.body)
   try {
     
-    if(req.body[0][5] != undefined && req.body[0][4] != "savings"){
+    if(req.body[0][5] != undefined && req.body[0][4] != "savings" && req.body[0][5] != "aaa"){
         const deletion = await Transaction.findOneAndDelete({_id: req.body[0][0]})
         return res.status(200).json({data: deletion})
     } else if(req.body[0][4] === "savings"){
       const deletion = await Savings.findOneAndDelete({_id: req.body[0][0]})
+      return res.status(200).json({data: deletion})
+    } else if(req.body[0][5] === "aaa"){
+      console.log("Deleting AUTO transaction", req.body)
+      const deletion = await Autotrans.findOneAndDelete({_id: req.body[0][0]})
       return res.status(200).json({data: deletion})
     } else {
         const deletion = await Category.findOneAndDelete({_id: req.body[0][0]})
