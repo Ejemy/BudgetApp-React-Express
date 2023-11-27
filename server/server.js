@@ -1,9 +1,8 @@
 const express = require("express");
 require("dotenv").config();
-const {MongoClient} = require("mongodb");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
-const { restart } = require("nodemon");
+const bcrypt = require("bcrypt");
 
 
 const app = express();
