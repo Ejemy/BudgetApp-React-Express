@@ -349,6 +349,8 @@ export default function App() {
   //auto transactions = [id, dateday, category, expense, income, "aaa"]
   const [autoTrans, setAutotrans] = useState(Array(1).fill(["xyz123", "", "", 0, 0, "aaa"]))
 
+  const [toggleAuto, setToggleAuto] = useState(false)
+
   useEffect(()=> {
     console.log("load...")
     fetch("/load")
@@ -1041,7 +1043,9 @@ if(!firstload && !deleteBool[0]){
     }
   }
 
-
+  function showAuto(){
+    setToggleAuto(!toggleAuto);
+  }
   
 
   return (
@@ -1061,8 +1065,9 @@ if(!firstload && !deleteBool[0]){
         }
         </h1>
       </div>
+      <button onClick={showAuto}>Auto Transactions</button>
       <div className="autoTransaction">
-        {autoTrans.map((value, index) => 
+        {toggleAuto && autoTrans.map((value, index) => 
           (
           <AutoRow
           data={value}
