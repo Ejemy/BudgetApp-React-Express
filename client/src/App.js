@@ -225,7 +225,7 @@ function AutoRow({
   handleDelete
 }) {
   return (
-    <div className="row-transaction">
+    <div className="auto-transaction">
       <input 
       type="date"
       className="date"
@@ -998,7 +998,6 @@ if(!firstload && !deleteBool[0]){
     const newId = ranNum + ranLet + ranNum2 + ranLet2;
     const today = new Date();
     let ddd = new Date(data.adate)
-    console.log("DDDDDDD", data.adate)
     ddd = ddd.toISOString()
     ddd = ddd.slice(0,10)
     const newArr = [newId, "",ddd ,data.acategory,data.aexpense,data.aincome, "aaa"];
@@ -1046,12 +1045,22 @@ if(!firstload && !deleteBool[0]){
   function showAuto(){
     setToggleAuto(!toggleAuto);
   }
-  
+
+  function newAutoRow(){
+    const tempauto = autoTrans.slice();
+    const abc = "abcdefghijklmnopqrstuvwxyz!#$%";
+    const ranNum = Math.floor(Math.random()* 100);
+    const ranNum2 = Math.floor(Math.random()* 100);
+    const ranLet = abc[Math.floor(Math.random() * abc.length)]
+    const ranLet2 = abc[Math.floor(Math.random() * abc.length)]
+    const newId = ranNum + ranLet + ranNum2 + ranLet2;
+    setAutotrans([...tempauto, [newId, "", "", 0, 0, "aaa"]])
+  }
 
   return (
     <div className="App">
       <div className="title">
-        <h1> Budget thingy </h1>
+        <h1 className="dateTitle"> Budget </h1>
         <h1 className="dateTitle">
          {
          (()=> {
@@ -1066,8 +1075,9 @@ if(!firstload && !deleteBool[0]){
         </h1>
       </div>
       <button onClick={showAuto}>Auto Transactions</button>
-      <div className="autoTransaction">
-        {toggleAuto && autoTrans.map((value, index) => 
+      {toggleAuto && <div className="autoTransaction">
+        <button onClick={newAutoRow}>New Auto Transaction</button>
+        {autoTrans.map((value, index) => 
           (
           <AutoRow
           data={value}
@@ -1085,7 +1095,7 @@ if(!firstload && !deleteBool[0]){
           )
         )}
         
-      </div>
+      </div> }
       <div className="total-amount" id="total">
           <Totals 
           tots = {total}

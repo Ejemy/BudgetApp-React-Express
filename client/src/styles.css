@@ -36,6 +36,7 @@
 .dateTitle{
   border: 3px black solid;
   border-radius: 10px;
+  padding:0.3em;
 }
 .date{
   border: 1px black solid;
@@ -164,7 +165,7 @@
 }
 
 
-.row-transaction {
+.row-transaction, .auto-transaction {
   display: grid;
   grid-template-columns: 0.5fr 1.5fr 1fr 1fr 1fr 0.1fr;
   width: 100%;
@@ -177,3 +178,8 @@
 }
 
 
+.autoTransaction{
+  border: black solid 3px;
+  background-color: lightgoldenrodyellow;
+  padding: 2em;
+}
