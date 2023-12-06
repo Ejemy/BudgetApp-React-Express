@@ -1,21 +1,55 @@
+.App{
+  display: grid;
+  grid-template-areas:
+      "title title title"
+      "tot tot tot"
+      "auto auto auto"
+      "budg trans trans"
+      "save trans trans";
+  grid-template-rows: 1fr 1fr 0fr 4fr 4fr;
+  grid-template-columns: 2fr 2fr 2fr;
+  height: 100vh;
+}
+
+body{
+  height:100vh;
+  margin:0;
+  overflow:hidden;
+}
+
+
+.title-container{
+  grid-area: title;
+  display: flex;
+  justify-content: space-around;
+}
+
+.budget-container, .savings-container  {
+  display: flex;;
+  flex-direction:column;
+  border: 3px black solid;
+  overflow-y:scroll;
+}
+
+.transaction-container{
+  grid-area: trans;
+  border: black 3px solid;
+  overflow-y:scroll;
+
+
+}
+
+
+
 .budget, .savings {
   font-family: sans-serif;
   text-align: center;
-  width: 65%;
-  margin: auto;
 }
 
-.row-budget{
+.row-budget, .row-savings{
   display:grid;
-  grid-template-columns: 2fr 1fr 1fr auto;
+  grid-template-columns: 1fr 1fr 1fr auto;
 
-}
-
-
-
-.row-savings {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr auto;
 }
 
 .savings-name{
@@ -33,11 +67,13 @@
   width: 50%;
   justify-content: space-between;
 }
+
 .dateTitle{
   border: 3px black solid;
   border-radius: 10px;
   padding:0.3em;
 }
+
 .date{
   border: 1px black solid;
 }
@@ -45,12 +81,10 @@
 .budget-titles, .transaction-titles{
   display: grid;
   grid-template-columns: 2fr 1fr 1fr auto;
-  width: 60%;
   align-content: center;
   height: 1.5em;
   font-size: small;
   text-align: center;
-  margin: auto;
   background-color: #ededed;
   border: 1px black dotted;
 }
@@ -74,7 +108,6 @@
 
 .transaction-titles{
   grid-template-columns: 2fr 1.2fr 1fr 1fr;
-  width: 75%;
 }
 
 .categoryamount {
@@ -139,23 +172,33 @@
 }
 
 .total-amount {
-  height: 100%;
-  margin: auto;
-  margin-bottom:2em;
-  width: 60%;
-  background-color: lightgrey;
-  
+    /* margin: auto; */
+    /* margin-bottom: 2em; */
+    /* width: 100%; */
+    grid-area: tot;
 }
 
+.auto-transaction{
+  grid-area: auto;
+  margin: auto;
+}
+.budget-container{
+  grid-area:budg;
+}
+.savings-container{
+  grid-area: save
+}
 .totals-container {
   display: flex;
-  justify-content: space-evenly;
+  background-color: lightgrey;
+  justify-content: space-around;
+  height: 100%;
+  font-size: 2.6cqw;
+  align-items: center;
   border: 2px black solid;
 }
 
 .transactions {
-  width: 80%;
-  margin: auto;
   display:flex;
   flex-direction: column-reverse;
 }
@@ -171,15 +214,24 @@
   width: 100%;
 }
 
-.newrow {
-  width: max-content;
-  position: relative;
-  top: 3em;
-}
 
+.auto-container{
+  grid-area:auto;
+}
 
 .autoTransaction{
   border: black solid 3px;
   background-color: lightgoldenrodyellow;
   padding: 2em;
+}
+
+
+.budgeted, .actual{
+    /* border: 1px black solid; */
+    display: flex;
+    flex-basis: fit-content;
+    /* height: 100%; */
+    /* width: 100%; */
+    text-align: center;
+    margin: auto;
 }
