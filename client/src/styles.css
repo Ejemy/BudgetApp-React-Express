@@ -3,18 +3,20 @@
   grid-template-areas:
       "title title title"
       "tot tot tot"
-      "auto auto auto"
+      "auto trans trans"
       "budg trans trans"
       "save trans trans";
-  grid-template-rows: 1fr 1fr 0fr 4fr 4fr;
+  grid-template-rows: 1fr 1fr 0fr 20fr 10fr;
   grid-template-columns: 2fr 2fr 2fr;
   height: 100vh;
+  grid-gap: 0.6em;
 }
 
 body{
   height:100vh;
   margin:0;
   overflow:hidden;
+  background-color:darkslategrey;
 }
 
 
@@ -22,23 +24,26 @@ body{
   grid-area: title;
   display: flex;
   justify-content: space-around;
+  width: 60%;
+  margin:auto;
 }
 
 .budget-container, .savings-container  {
-  display: flex;;
+  display: flex;
   flex-direction:column;
-  border: 3px black solid;
-  overflow-y:scroll;
 }
 
 .transaction-container{
   grid-area: trans;
-  border: black 3px solid;
-  overflow-y:scroll;
-
 
 }
-
+.budget-container, .savings-container, .transaction-container {
+  border: 3px black solid;
+  background-color:white;
+  padding: 0.3em;
+  overflow-y:scroll;
+  box-shadow: 3px 1px 3px 0px black;
+}
 
 
 .budget, .savings {
@@ -72,6 +77,8 @@ body{
   border: 3px black solid;
   border-radius: 10px;
   padding:0.3em;
+  margin:auto;
+  background-color:white;
 }
 
 .date{
@@ -80,7 +87,7 @@ body{
 
 .budget-titles, .transaction-titles{
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr auto;
+  grid-template-columns: 1fr 1fr 1fr;
   align-content: center;
   height: 1.5em;
   font-size: small;
@@ -152,9 +159,7 @@ body{
   height: 100%;
 }
 
-.newbutton, .newSavings {
-  padding: 1em;
-}
+
 
 
 
@@ -172,16 +177,14 @@ body{
 }
 
 .total-amount {
-    /* margin: auto; */
-    /* margin-bottom: 2em; */
-    /* width: 100%; */
     grid-area: tot;
 }
 
 .auto-transaction{
   grid-area: auto;
-  margin: auto;
+  display:flex;
 }
+
 .budget-container{
   grid-area:budg;
 }
@@ -191,10 +194,7 @@ body{
 .totals-container {
   display: flex;
   background-color: lightgrey;
-  justify-content: space-around;
-  height: 100%;
   font-size: 2.6cqw;
-  align-items: center;
   border: 2px black solid;
 }
 
@@ -208,7 +208,7 @@ body{
 }
 
 
-.row-transaction, .auto-transaction {
+.row-transaction {
   display: grid;
   grid-template-columns: 0.5fr 1.5fr 1fr 1fr 1fr 0.1fr;
   width: 100%;
@@ -222,7 +222,7 @@ body{
 .autoTransaction{
   border: black solid 3px;
   background-color: lightgoldenrodyellow;
-  padding: 2em;
+  padding: 1em;
 }
 
 
@@ -230,8 +230,36 @@ body{
     /* border: 1px black solid; */
     display: flex;
     flex-basis: fit-content;
-    /* height: 100%; */
-    /* width: 100%; */
+    align-items:center;
     text-align: center;
     margin: auto;
 }
+
+.budgeted p, .actual p {
+  color:black;
+  margin:0;
+}
+
+.new-savings {
+  display: flex;
+    align-items: center;
+    font-size: 4cqh;
+}
+
+
+.faTitle {
+  padding:0;
+  margin: auto;
+}
+
+
+.newbutton {
+  transition-duration: 400ms;
+}
+.newbutton:hover {
+  color: darkgrey;
+}
+.newbutton:active{
+  color: grey;
+}
+
