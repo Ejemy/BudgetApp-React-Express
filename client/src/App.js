@@ -1,7 +1,8 @@
 import "./styles.css";
 
 import { useState, useEffect, useCallback } from "react";
-
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSquarePlus } from '@fortawesome/free-solid-svg-icons'
 function CategoryAmount({ parentCallback, idval, val, id }) {
   return (
     <input
@@ -45,9 +46,10 @@ function AmountBox({ Numvalue, Spent }) {
 
 function NewBox({ handleClick, title, id }) {
   return (
-    <button className="newbutton" onClick={handleClick}>
-      {title}
-    </button>
+    <div className="new-savings">
+      <FontAwesomeIcon icon={faSquarePlus} className="newbutton" onClick={handleClick}/>
+      <h4 className="faTitle">Budget</h4>
+  </div>
   );
 }
 
@@ -304,21 +306,21 @@ function Totals({ tots, transaction }) {
     }
   }
   const actual = income + expense;
-  let actualcolor = "black";
+  let actualcolor = "green";
   if (actual < 0) {
     actualcolor = "red";
   } else {
-    actualcolor = "black";
+    actualcolor = "green";
   }
 
   return (
     <div className="totals-container">
       <div className="budgeted">Budgeted: ¥{tots.toLocaleString()}</div>
-      <div className="budgeted">
-        Left to budget: ¥{(income - tots).toLocaleString()}
+      <div className="budgeted" style={{ color: actualcolor }}>
+        <p>Left to budget:</p> ¥{(income - tots).toLocaleString()}
       </div>
       <div className="actual" style={{ color: actualcolor }}>
-        Actual: ¥{actual.toLocaleString()}{" "}
+        <p>Actual:</p> ¥{actual.toLocaleString()}{" "}
       </div>
     </div>
   );
@@ -1131,7 +1133,6 @@ export default function App() {
   return (
     <div className="App">
       <div className="title-container">
-        <h1 className="dateTitle"> Budget </h1>
         <h1 className="dateTitle">
           {(() => {
             const date = new Date();
@@ -1152,7 +1153,7 @@ export default function App() {
             const month = date.getMonth();
             const year = date.getFullYear();
 
-            return months[month] + " " + year;
+            return "Budget of " + months[month] + " " + year;
           })()}
         </h1>
       </div>
@@ -1164,7 +1165,10 @@ export default function App() {
         <button onClick={showAuto}>Auto Transactions</button>
         {toggleAuto && (
           <div className="autoTransaction">
-            <button onClick={newAutoRow}>New Auto Transaction</button>
+            <div className="new-savings">
+          <FontAwesomeIcon icon={faSquarePlus} className="newbutton" onClick={newSavings}/>
+          <h4 className="faTitle">Auto Transactions</h4>
+        </div>
             {autoTrans.map((value, index) => (
               <AutoRow
                 data={value}
@@ -1210,9 +1214,8 @@ export default function App() {
       </div>
       <div className="savings-container">
         <div className="new-savings">
-          <button className="newSavings" onClick={newSavings}>
-            New Savings
-          </button>
+          <FontAwesomeIcon icon={faSquarePlus} className="newbutton" onClick={newSavings}/>
+          <h4 className="faTitle">Savings</h4>
         </div>
         <div className="budget-titles">
           <p>Savings Name</p>
@@ -1234,10 +1237,9 @@ export default function App() {
         
       </div>
       <div className="transaction-container">
-        <div className="newrow">
-          <button className="newbutton" onClick={newRow}>
-            New Row
-          </button>
+        <div className="new-savings">
+          <FontAwesomeIcon icon={faSquarePlus} className="newbutton" onClick={newRow}/>
+          <h4 className="faTitle">Transactions</h4>
         </div>
         <div className="transaction-titles">
           <p>Memo</p>
