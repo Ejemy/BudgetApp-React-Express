@@ -1,8 +1,8 @@
 const express = require("express");
-require("dotenv").config();
+require("dotenv").config( {path: "./.gitignore/.env"});
+const url = process.env.MONGO_URI;
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
-const bcrypt = require("bcrypt");
 
 
 const app = express();
@@ -12,9 +12,10 @@ app.use(
     extended: true,
   }),
 );
+app.use(express.static("./client/public"))
 
 
-const url = process.env.MONGO_URI;
+
 
 const db = mongoose.createConnection(url, {useNewUrlParser: true, useUnifiedTopology: true})
 
@@ -26,6 +27,11 @@ let Category = db.model("Category", categorySchema);
 let Transaction = db.model("Transaction", transactionSchema)
 let Savings = db.model("Savings", savingsSchema)
 let Autotrans = db.model("Autotrans", autoTranSchema)
+
+app.get("/", (req, res)=>{
+  res.sendFile("./client/public/indexl.html")
+})
+
 
 app.get("/load", async (req, res) => {
   try {
