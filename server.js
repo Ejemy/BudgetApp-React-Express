@@ -11,7 +11,7 @@ app.use(
     extended: true,
   }),
 );
-//app.use(express.static("./client/public"))
+app.use(express.static(path.join(__dirname, 'client', 'public')))
 
 
 
@@ -27,8 +27,9 @@ let Transaction = db.model("Transaction", transactionSchema)
 let Savings = db.model("Savings", savingsSchema)
 let Autotrans = db.model("Autotrans", autoTranSchema)
 
+
 app.get("/", (req, res)=>{
-  res.sendFile("./client/public/indexl.html")
+  res.sendFile(path.join(__dirname, '../', 'client', 'public', 'index.html'))
 })
 
 
