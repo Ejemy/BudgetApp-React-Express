@@ -1,6 +1,5 @@
 const express = require("express");
-require("dotenv").config( {path: "./.gitignore/.env"});
-const url = process.env.MONGO_URI;
+require("dotenv").config();
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 
@@ -134,6 +133,6 @@ app.post("/delete", async (req,res)=> {
   }
 })
 
-app.listen(5000, () => {
+app.listen(process.env.PORT || 5000, () => {
     console.log("Server running!")
 });
