@@ -2,7 +2,7 @@ const express = require("express");
 require("dotenv").config({ path: "./.gitignore/.env"});
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
-
+const url = process.env.MONGO_URI;
 
 const app = express();
 app.use(bodyParser.json());
