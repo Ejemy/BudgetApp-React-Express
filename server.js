@@ -2,6 +2,7 @@ const express = require("express");
 require("dotenv").config({ path: "./.gitignore/.env"});
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
+const path = require("path")
 const url = process.env.MONGO_URI;
 
 const app = express();
@@ -27,11 +28,11 @@ let Transaction = db.model("Transaction", transactionSchema)
 let Savings = db.model("Savings", savingsSchema)
 let Autotrans = db.model("Autotrans", autoTranSchema)
 
-
+/*
 app.get("/", (req, res)=>{
   res.sendFile(path.join(__dirname, '../', 'client', 'public', 'index.html'))
 })
-
+*/
 
 
 app.get("/load", async (req, res) => {
@@ -136,5 +137,5 @@ app.post("/delete", async (req,res)=> {
 })
 
 app.listen(process.env.PORT || 5000, () => {
-    console.log("Server running!")
+    console.log("Server running on port ${PORT}!")
 });
