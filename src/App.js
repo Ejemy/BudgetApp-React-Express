@@ -1067,7 +1067,7 @@ export default function App() {
     ddd = ddd.slice(0, 10);
     const newArr = [
       newId,
-      "",
+      "AUTO",
       ddd,
       data.acategory,
       data.aexpense,
