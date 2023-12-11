@@ -30,7 +30,7 @@ let Autotrans = db.model("Autotrans", autoTranSchema)
 
 
 app.get("/", (req, res)=>{
-  res.sendFile(path.join(__dirname, '../', 'client', 'public', 'index.html'))
+  res.sendFile(path.join(__dirname, '../','public', 'index.html'))
 })
 
 
