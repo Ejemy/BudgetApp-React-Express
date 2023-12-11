@@ -29,10 +29,6 @@ let Savings = db.model("Savings", savingsSchema)
 let Autotrans = db.model("Autotrans", autoTranSchema)
 
 
-app.get("/", (req, res)=>{
-  res.sendFile(path.join(__dirname, '../','public', 'index.html'))
-})
-
 
 
 app.get("/load", async (req, res) => {
