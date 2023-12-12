@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const path = require("path")
 const url = process.env.MONGO_URI;
+const pass = process.env.PASS_KEY;
 
 const app = express();
 app.use(bodyParser.json());
@@ -37,7 +38,7 @@ app.get("/load", async (req, res) => {
     const transD = await Transaction.find({})
     const savingsD = await Savings.find({})
     const autoD = await Autotrans.find({})
-    const combinedData = {category: data, transaction: transD, savings: savingsD, auto: autoD}
+    const combinedData = {category: data, transaction: transD, savings: savingsD, auto: autoD, pass: pass}
     return res.json(combinedData);
    
   } catch (err) {
