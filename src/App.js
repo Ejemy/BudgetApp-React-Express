@@ -1138,8 +1138,8 @@ export default function App() {
   }
 
   function lockCheck(x){
-    console.log(x.target)
-    if(x.target === toggleLock[1][0]){
+    console.log(x.target.value)
+    if(x.target.value === toggleLock[1]){
       console.log("YEAH")
       setToggleLock(false, ["yeah"])
     }
