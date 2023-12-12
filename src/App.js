@@ -413,6 +413,9 @@ export default function App() {
 
   const [toggleAuto, setToggleAuto] = useState(false);
 
+  //lock
+  const [toggleLock, setToggleLock] = useState([true, []]);
+
   useEffect(() => {
     console.log("load...");
     fetch("/load")
@@ -423,10 +426,11 @@ export default function App() {
         let transstuff = transaction.slice();
         let sav = savings.slice();
         let aut = autoTrans.slice();
-
         const todaydate = new Date();
         const todayDate = todaydate.getDate();
         const todayMonth = todaydate.getMonth();
+        let pass = data.pass;
+
 
         for (let i in data.category) {
           const bdate = new Date(data.category[i].bdate);
@@ -532,6 +536,9 @@ export default function App() {
           }
         }
 
+        let stuffpass = [pass];
+
+        setToggleLock(true, stuffpass)
         setTransaction(transstuff);
         setSavings(sav);
         setAutotrans(aut);
@@ -1130,8 +1137,26 @@ export default function App() {
     setAutotrans([...tempauto, [newId, "", "", 0, 0, "aaa"]]);
   }
 
+  function lockCheck(x){
+    console.log(x.target)
+    if(x.target === toggleLock[1][0]){
+      console.log("YEAH")
+      setToggleLock(false, ["yeah"])
+    }
+    
+  }
+
   return (
     <div className="App">
+      {toggleLock && (
+        <div className="lock">
+          <input
+             className="lock-input"
+             placeholder ="passcode"
+             onChange = {(event) => lockCheck(event)}
+          />
+        </div>
+      )}
       <div className="title-container">
         <h1 className="dateTitle">
           {(() => {

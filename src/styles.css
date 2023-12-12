@@ -263,3 +263,13 @@ body{
   color: grey;
 }
 
+.lock{
+  width: 50%;
+  height: 50%;
+  background-color: white;
+  position: absolute;
+  left: 25%;
+  top: 25%;
+  border: black 3px solid;
+  box-shadow: 5px 5px 5px black;
+}
