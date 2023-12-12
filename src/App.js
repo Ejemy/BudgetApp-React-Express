@@ -414,7 +414,7 @@ export default function App() {
   const [toggleAuto, setToggleAuto] = useState(false);
 
   //lock
-  const [toggleLock, setToggleLock] = useState([true, []]);
+  const [toggleLock, setToggleLock] = useState([true, ""]);
 
   useEffect(() => {
     console.log("load...");
@@ -536,9 +536,8 @@ export default function App() {
           }
         }
 
-        let stuffpass = [pass];
 
-        setToggleLock(true, stuffpass)
+        setToggleLock(true, pass)
         setTransaction(transstuff);
         setSavings(sav);
         setAutotrans(aut);
@@ -1139,6 +1138,7 @@ export default function App() {
 
   function lockCheck(x){
     console.log(x.target.value)
+    console.log(toggleLock)
     if(x.target.value === toggleLock[1]){
       console.log("YEAH")
       setToggleLock(false, ["yeah"])

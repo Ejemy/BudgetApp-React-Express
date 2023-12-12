@@ -272,4 +272,7 @@ body{
   top: 25%;
   border: black 3px solid;
   box-shadow: 5px 5px 5px black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
