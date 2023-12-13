@@ -531,6 +531,10 @@ export default function App() {
               checky = false;
               break;
             }
+            if(data.auto[a].acategory === ""){
+              checky = false;
+              break;
+            }
           }
           if (checky) {
             console.log("START");
@@ -1161,13 +1165,14 @@ export default function App() {
           <form id="loginForm" action="/login" method="post">
             <h1>PASSCODE</h1>
             <input
-              type="text"
+              type="password"
               id="passcode"
               name="passcode"
+              className="pass"
               onChange={(e) => setPasscode(e.target.value)}
             />{" "}
             <br /> <br />
-            <input type="submit" value="submit" />
+            <input className="submitbutton" type="submit" value="submit" />
           </form>
         </div>
       )}
