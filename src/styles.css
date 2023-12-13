@@ -301,11 +301,15 @@ body{
   .App {
     display:flex;
     flex-direction: column;
+    grid-gap:0;
   }
-
+  .row-transaction{
+    grid-template-columns: 1fr 2fr 2fr 2fr 2fr 1fr;
+  }
   .title-container{
     margin:0;
     font-size: small;
+    width: 100%;
   }
 
   .budget-container{
@@ -321,10 +325,25 @@ body{
     display: none;
   }
 
-  .income, .expenditure, .delete, .trans-name {
-    display:none;
+  .income, .expend, .delete, .trans-name {
+   
   }
   .submitbutton{
     width: 4em;
   }
+
+  .date:focus + .income,
+  .date:focus + .expend,
+  .date:focus + .delete,
+  .date:focus + .trans-name,
+  .options:focus + .income,
+  .options:focus + .expend,
+  .options:focus + .delete,
+  .options:focus + .trans-name {
+      
+  }
+.date{
+  width: 2em;
+}
+
 }
