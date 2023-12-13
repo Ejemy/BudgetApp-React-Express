@@ -275,4 +275,10 @@ body{
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius:20px;
+  transition-duration: 200ms;
+}
+
+.lock form{
+  text-align: center;
 }

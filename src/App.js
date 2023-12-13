@@ -1158,9 +1158,8 @@ export default function App() {
     <div className="App">
       {toggleLock && (
         <div className="lock" id="loginDiv" onSubmit={handlelogSubmit}>
-
           <form id="loginForm" action="/login" method="post">
-            <title>PASSCODE</title>
+            <h1>PASSCODE</h1>
             <input
               type="text"
               id="passcode"
@@ -1197,13 +1196,12 @@ export default function App() {
           })()}
         </h1>
       </div>
-      {
-        !toggleLock && (
-      <div>
+      {!toggleLock && (
         <div className="total-amount" id="total">
           <Totals tots={total} transaction={transaction} />
         </div>
-
+      )}
+      {!toggleLock && (
         <div className="auto-container">
           <button onClick={showAuto}>Auto Transactions</button>
           {toggleAuto && (
@@ -1234,7 +1232,8 @@ export default function App() {
             </div>
           )}
         </div>
-
+      )}
+      {!toggleLock && (
         <div className="budget-container">
           <div className="newcat">
             <NewBox title="New Category" handleClick={handleNewCat} />
@@ -1257,6 +1256,8 @@ export default function App() {
             ))}
           </div>
         </div>
+      )}
+      {!toggleLock && (
         <div className="savings-container">
           <div className="new-savings">
             <FontAwesomeIcon
@@ -1284,6 +1285,8 @@ export default function App() {
             ))}
           </div>
         </div>
+      )}
+      {!toggleLock && (
         <div className="transaction-container">
           <div className="new-savings">
             <FontAwesomeIcon
@@ -1316,8 +1319,7 @@ export default function App() {
             ))}
           </div>
         </div>
-      </div>
-        )}
+      )}
     </div>
   );
 }
