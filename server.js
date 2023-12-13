@@ -16,7 +16,6 @@ app.use(express.static(path.join(__dirname, 'build')))
 
 
 
-
 const db = mongoose.createConnection(url, {useNewUrlParser: true, useUnifiedTopology: true})
 
 var categorySchema = new mongoose.Schema({_id: String, name: String, amount: Number, spent: Number, bdate: String});
@@ -28,7 +27,12 @@ let Transaction = db.model("Transaction", transactionSchema)
 let Savings = db.model("Savings", savingsSchema)
 let Autotrans = db.model("Autotrans", autoTranSchema)
 
-
+app.post("/login", (req,res) => {
+  console.log(req.body)
+  if(req.body.passcode === process.env.PASS_KEY){
+    res.json({ success: true })
+  }
+})
 
 
 app.get("/load", async (req, res) => {
@@ -37,9 +41,8 @@ app.get("/load", async (req, res) => {
     const transD = await Transaction.find({})
     const savingsD = await Savings.find({})
     const autoD = await Autotrans.find({})
-    const pass = process.env.PASS_KEY;
 
-    const combinedData = {category: data, transaction: transD, savings: savingsD, auto: autoD, pass: pass}
+    const combinedData = {category: data, transaction: transD, savings: savingsD, auto: autoD}
     return res.json(combinedData);
    
   } catch (err) {
@@ -47,6 +50,9 @@ app.get("/load", async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
+
+
+
 
 
 app.post("/update", async (req, res) => {
