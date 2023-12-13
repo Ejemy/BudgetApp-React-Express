@@ -294,3 +294,34 @@ body{
     transition: all .3s cubic-bezier(0.67, 0.17, 0.40, 0.83);
     font-size: 2em;
 }
+
+
+
+@media only screen and (max-width: 600px) {
+  .App {
+    display:flex;
+    flex-direction: column;
+  }
+
+  .title-container{
+    margin:0;
+    font-size: small;
+  }
+
+  .budget-container{
+    height:30%
+  }
+  .savings-container{
+    height: 20%;
+  }
+  .transaction-container{
+    height:50%
+  }
+  .transaction-titles{
+    display: none;
+  }
+
+  .income .Delete .trans-name {
+    display:none;
+  }
+}
