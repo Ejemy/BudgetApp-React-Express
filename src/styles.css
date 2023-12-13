@@ -321,7 +321,10 @@ body{
     display: none;
   }
 
-  .income .Delete .trans-name {
+  .income, .expenditure, .delete, .trans-name {
     display:none;
+  }
+  .submitbutton{
+    width: 4em;
   }
 }
