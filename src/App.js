@@ -650,10 +650,6 @@ export default function App() {
     }
   }, [autoTrans]);
 
-  
-      
-
-
   //Ensures that the input is only a number
   function modifyNum(arr, filterArr) {
     for (let j = 0; j < arr.length; j++) {
@@ -1129,43 +1125,49 @@ export default function App() {
     setToggleAuto(!toggleAuto);
   }
 
-const handlelogSubmit = async (event) => {
-  // GET REQUEST FOR LOGIN
-  event.preventDefault();
-  try {
-    const response = await fetch('/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ passcode }),
-    });
+  const handlelogSubmit = async (event) => {
+    // GET REQUEST FOR LOGIN
+    event.preventDefault();
+    try {
+      const response = await fetch("/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ passcode }),
+      });
 
-    if (!response.ok) {
-      throw new Error('Login failed');
+      if (!response.ok) {
+        throw new Error("Login failed");
+      }
+
+      const data = await response.json();
+      console.log("LOGIN SUCCESS?", data);
+
+      if (data.success) {
+        setToggleLock(false);
+      } else {
+        console.error("Login failed");
+      }
+    } catch (error) {
+      console.error("Error during login:", error);
     }
-
-    const data = await response.json();
-    console.log('LOGIN SUCCESS?', data);
-
-    if (data.success) {
-      // Handle success, e.g., redirect, show content, etc.
-      setToggleLock(false);
-    } else {
-      // Handle login failure if needed
-      console.error('Login failed');
-    }
-  } catch (error) {
-    console.error('Error during login:', error);
-  }
-}
+  };
 
   return (
     <div className="App">
       {toggleLock && (
         <div className="lock" id="loginDiv" onSubmit={handlelogSubmit}>
+
           <form id="loginForm" action="/login" method="post">
-            <input type="text" id="passcode" name="passcode" onChange={(e) => setPasscode(e.target.value)} /> <br /> <br />
+            <title>PASSCODE</title>
+            <input
+              type="text"
+              id="passcode"
+              name="passcode"
+              onChange={(e) => setPasscode(e.target.value)}
+            />{" "}
+            <br /> <br />
             <input type="submit" value="submit" />
           </form>
         </div>
@@ -1195,122 +1197,127 @@ const handlelogSubmit = async (event) => {
           })()}
         </h1>
       </div>
+      {
+        !toggleLock && (
+      <div>
+        <div className="total-amount" id="total">
+          <Totals tots={total} transaction={transaction} />
+        </div>
 
-      <div className="total-amount" id="total">
-        <Totals tots={total} transaction={transaction} />
-      </div>
-      <div className="auto-container">
-        <button onClick={showAuto}>Auto Transactions</button>
-        {toggleAuto && (
-          <div className="autoTransaction">
-            <div className="new-savings">
-              <FontAwesomeIcon
-                icon={faSquarePlus}
-                className="newbutton"
-                onClick={newSavings}
-              />
-              <h4 className="faTitle">Auto Transactions</h4>
+        <div className="auto-container">
+          <button onClick={showAuto}>Auto Transactions</button>
+          {toggleAuto && (
+            <div className="autoTransaction">
+              <div className="new-savings">
+                <FontAwesomeIcon
+                  icon={faSquarePlus}
+                  className="newbutton"
+                  onClick={newSavings}
+                />
+                <h4 className="faTitle">Auto Transactions</h4>
+              </div>
+              {autoTrans.map((value, index) => (
+                <AutoRow
+                  data={value}
+                  index={index}
+                  autotransData={autoTrans}
+                  boxvalue={boxvalue}
+                  handleCatOption={handleCatOption}
+                  saveAuto={(x, y, z) => saveAuto(x, y, z)}
+                  inputCallback={(x, y, z) => handleInput(x, y, z)}
+                  nameCallback={(x, y, z) => transName(x, y, z)}
+                  handleDate={(x, y, z) => handleDate(x, y, z)}
+                  handleDelete={handleDelete}
+                  handleSave={(x, y, z) => handleSave(x, y, z)}
+                />
+              ))}
             </div>
-            {autoTrans.map((value, index) => (
-              <AutoRow
+          )}
+        </div>
+
+        <div className="budget-container">
+          <div className="newcat">
+            <NewBox title="New Category" handleClick={handleNewCat} />
+          </div>
+          <div className="budget-titles">
+            <p>Category</p>
+            <p>Budgeted</p>
+            <p>Remaining</p>
+          </div>
+          <div className="budget">
+            {boxvalue.map((value, index) => (
+              <Budget
+                value={value}
+                index={index}
+                handleDelete={handleDelete}
+                handleCatName={(x, y, z) => handleCatName(x, y, z)}
+                handleInput={(x, y, z) => handleInput(x, y, z)}
+                box={boxvalue}
+              />
+            ))}
+          </div>
+        </div>
+        <div className="savings-container">
+          <div className="new-savings">
+            <FontAwesomeIcon
+              icon={faSquarePlus}
+              className="newbutton"
+              onClick={newSavings}
+            />
+            <h4 className="faTitle">Savings</h4>
+          </div>
+          <div className="budget-titles">
+            <p>Savings Name</p>
+            <p>Budgeted</p>
+            <p>Total</p>
+          </div>
+          <div className="savings">
+            {savings.map((value, index) => (
+              <Savings
                 data={value}
                 index={index}
-                autotransData={autoTrans}
+                handleDelete={handleDelete}
+                savingsCallback={(x, y, z) => handleInput(x, y, z)}
+                savingsname={(x, y, z) => handleSavingsName(x, y, z)}
+                sav={savings}
+              />
+            ))}
+          </div>
+        </div>
+        <div className="transaction-container">
+          <div className="new-savings">
+            <FontAwesomeIcon
+              icon={faSquarePlus}
+              className="newbutton"
+              onClick={newRow}
+            />
+            <h4 className="faTitle">Transactions</h4>
+          </div>
+          <div className="transaction-titles">
+            <p>Memo</p>
+            <p>Category</p>
+            <p>Expense</p>
+            <p>Income</p>
+          </div>
+          <div className="transactions">
+            {transaction.map((event, index) => (
+              <Row
+                index={index}
+                data={event}
+                tran={transaction}
                 boxvalue={boxvalue}
                 handleCatOption={handleCatOption}
-                saveAuto={(x, y, z) => saveAuto(x, y, z)}
                 inputCallback={(x, y, z) => handleInput(x, y, z)}
                 nameCallback={(x, y, z) => transName(x, y, z)}
                 handleDate={(x, y, z) => handleDate(x, y, z)}
                 handleDelete={handleDelete}
-                handleSave={(x, y, z) => handleSave(x, y, z)}
+                key={index}
               />
             ))}
           </div>
+        </div>
+      </div>
         )}
-      </div>
-
-      <div className="budget-container">
-        <div className="newcat">
-          <NewBox title="New Category" handleClick={handleNewCat} />
-        </div>
-        <div className="budget-titles">
-          <p>Category</p>
-          <p>Budgeted</p>
-          <p>Remaining</p>
-        </div>
-        <div className="budget">
-          {boxvalue.map((value, index) => (
-            <Budget
-              value={value}
-              index={index}
-              handleDelete={handleDelete}
-              handleCatName={(x, y, z) => handleCatName(x, y, z)}
-              handleInput={(x, y, z) => handleInput(x, y, z)}
-              box={boxvalue}
-            />
-          ))}
-        </div>
-      </div>
-      <div className="savings-container">
-        <div className="new-savings">
-          <FontAwesomeIcon
-            icon={faSquarePlus}
-            className="newbutton"
-            onClick={newSavings}
-          />
-          <h4 className="faTitle">Savings</h4>
-        </div>
-        <div className="budget-titles">
-          <p>Savings Name</p>
-          <p>Budgeted</p>
-          <p>Total</p>
-        </div>
-        <div className="savings">
-          {savings.map((value, index) => (
-            <Savings
-              data={value}
-              index={index}
-              handleDelete={handleDelete}
-              savingsCallback={(x, y, z) => handleInput(x, y, z)}
-              savingsname={(x, y, z) => handleSavingsName(x, y, z)}
-              sav={savings}
-            />
-          ))}
-        </div>
-      </div>
-      <div className="transaction-container">
-        <div className="new-savings">
-          <FontAwesomeIcon
-            icon={faSquarePlus}
-            className="newbutton"
-            onClick={newRow}
-          />
-          <h4 className="faTitle">Transactions</h4>
-        </div>
-        <div className="transaction-titles">
-          <p>Memo</p>
-          <p>Category</p>
-          <p>Expense</p>
-          <p>Income</p>
-        </div>
-        <div className="transactions">
-          {transaction.map((event, index) => (
-            <Row
-              index={index}
-              data={event}
-              tran={transaction}
-              boxvalue={boxvalue}
-              handleCatOption={handleCatOption}
-              inputCallback={(x, y, z) => handleInput(x, y, z)}
-              nameCallback={(x, y, z) => transName(x, y, z)}
-              handleDate={(x, y, z) => handleDate(x, y, z)}
-              handleDelete={handleDelete}
-              key={index}
-            />
-          ))}
-        </div>
-      </div>
     </div>
   );
 }
