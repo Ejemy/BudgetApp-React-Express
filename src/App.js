@@ -1,8 +1,8 @@
 import "./styles.css";
 
 import { useState, useEffect, useCallback } from "react";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSquarePlus } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSquarePlus } from "@fortawesome/free-solid-svg-icons";
 function CategoryAmount({ parentCallback, idval, val, id }) {
   return (
     <input
@@ -47,9 +47,13 @@ function AmountBox({ Numvalue, Spent }) {
 function NewBox({ handleClick, title, id }) {
   return (
     <div className="new-savings">
-      <FontAwesomeIcon icon={faSquarePlus} className="newbutton" onClick={handleClick}/>
+      <FontAwesomeIcon
+        icon={faSquarePlus}
+        className="newbutton"
+        onClick={handleClick}
+      />
       <h4 className="faTitle">Budget</h4>
-  </div>
+    </div>
   );
 }
 
@@ -412,9 +416,8 @@ export default function App() {
   );
 
   const [toggleAuto, setToggleAuto] = useState(false);
-
-  //lock
-  const [toggleLock, setToggleLock] = useState([true, ""]);
+  const [toggleLock, setToggleLock] = useState(true);
+  const [passcode, setPasscode] = useState("");
 
   useEffect(() => {
     console.log("load...");
@@ -430,7 +433,6 @@ export default function App() {
         const todayDate = todaydate.getDate();
         const todayMonth = todaydate.getMonth();
         let pass = data.pass;
-
 
         for (let i in data.category) {
           const bdate = new Date(data.category[i].bdate);
@@ -536,8 +538,6 @@ export default function App() {
           }
         }
 
-
-        setToggleLock(true, pass)
         setTransaction(transstuff);
         setSavings(sav);
         setAutotrans(aut);
@@ -649,6 +649,10 @@ export default function App() {
       setDeletebool([false, []]);
     }
   }, [autoTrans]);
+
+  
+      
+
 
   //Ensures that the input is only a number
   function modifyNum(arr, filterArr) {
@@ -1125,36 +1129,45 @@ export default function App() {
     setToggleAuto(!toggleAuto);
   }
 
-  function newAutoRow() {
-    const tempauto = autoTrans.slice();
-    const abc = "abcdefghijklmnopqrstuvwxyz!#$%";
-    const ranNum = Math.floor(Math.random() * 100);
-    const ranNum2 = Math.floor(Math.random() * 100);
-    const ranLet = abc[Math.floor(Math.random() * abc.length)];
-    const ranLet2 = abc[Math.floor(Math.random() * abc.length)];
-    const newId = ranNum + ranLet + ranNum2 + ranLet2;
-    setAutotrans([...tempauto, [newId, "", "", 0, 0, "aaa"]]);
-  }
+const handlelogSubmit = async (event) => {
+  // GET REQUEST FOR LOGIN
+  event.preventDefault();
+  try {
+    const response = await fetch('/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ passcode }),
+    });
 
-  function lockCheck(x){
-    console.log(x.target.value)
-    console.log(toggleLock)
-    if(x.target.value === toggleLock[1]){
-      console.log("YEAH")
-      setToggleLock(false, ["yeah"])
+    if (!response.ok) {
+      throw new Error('Login failed');
     }
-    
+
+    const data = await response.json();
+    console.log('LOGIN SUCCESS?', data);
+
+    if (data.success) {
+      // Handle success, e.g., redirect, show content, etc.
+      setToggleLock(false);
+    } else {
+      // Handle login failure if needed
+      console.error('Login failed');
+    }
+  } catch (error) {
+    console.error('Error during login:', error);
   }
+}
 
   return (
     <div className="App">
       {toggleLock && (
-        <div className="lock">
-          <input
-             className="lock-input"
-             placeholder ="passcode"
-             onChange = {(event) => lockCheck(event)}
-          />
+        <div className="lock" id="loginDiv" onSubmit={handlelogSubmit}>
+          <form id="loginForm" action="/login" method="post">
+            <input type="text" id="passcode" name="passcode" onChange={(e) => setPasscode(e.target.value)} /> <br /> <br />
+            <input type="submit" value="submit" />
+          </form>
         </div>
       )}
       <div className="title-container">
@@ -1191,9 +1204,13 @@ export default function App() {
         {toggleAuto && (
           <div className="autoTransaction">
             <div className="new-savings">
-          <FontAwesomeIcon icon={faSquarePlus} className="newbutton" onClick={newSavings}/>
-          <h4 className="faTitle">Auto Transactions</h4>
-        </div>
+              <FontAwesomeIcon
+                icon={faSquarePlus}
+                className="newbutton"
+                onClick={newSavings}
+              />
+              <h4 className="faTitle">Auto Transactions</h4>
+            </div>
             {autoTrans.map((value, index) => (
               <AutoRow
                 data={value}
@@ -1234,12 +1251,14 @@ export default function App() {
             />
           ))}
         </div>
-
-        
       </div>
       <div className="savings-container">
         <div className="new-savings">
-          <FontAwesomeIcon icon={faSquarePlus} className="newbutton" onClick={newSavings}/>
+          <FontAwesomeIcon
+            icon={faSquarePlus}
+            className="newbutton"
+            onClick={newSavings}
+          />
           <h4 className="faTitle">Savings</h4>
         </div>
         <div className="budget-titles">
@@ -1259,11 +1278,14 @@ export default function App() {
             />
           ))}
         </div>
-        
       </div>
       <div className="transaction-container">
         <div className="new-savings">
-          <FontAwesomeIcon icon={faSquarePlus} className="newbutton" onClick={newRow}/>
+          <FontAwesomeIcon
+            icon={faSquarePlus}
+            className="newbutton"
+            onClick={newRow}
+          />
           <h4 className="faTitle">Transactions</h4>
         </div>
         <div className="transaction-titles">
