@@ -1097,8 +1097,7 @@ export default function App() {
     ddd = ddd.toISOString();
     ddd = ddd.slice(0, 10);
     const newArr = [
-      newId,
-      "AUTO",
+      newId,  //had something called "AUTO" also as one input idk why
       ddd,
       data.acategory,
       data.aexpense,
@@ -1108,6 +1107,28 @@ export default function App() {
 
     return newArr;
   }
+
+  function newAuto(){
+    const abc = "abcdefghijklmnopqrstuvwxyz!#$%";
+    const ranNum = Math.floor(Math.random() * 100);
+    const ranNum2 = Math.floor(Math.random() * 100);
+    const ranLet = abc[Math.floor(Math.random() * abc.length)];
+    const ranLet2 = abc[Math.floor(Math.random() * abc.length)];
+    const newId = ranNum + ranLet + ranNum2 + ranLet2;
+
+    const newArr = [
+      newId,
+      "AUTO",
+      "",
+      "",
+      0,
+      0,
+      "aaa",
+    ];
+
+    setAutotrans([...autoTrans, newArr])
+  }
+
 
   function handleSave(stuff, index, data) {
     console.log("handleSAVE", data);
@@ -1236,7 +1257,7 @@ export default function App() {
                 <FontAwesomeIcon
                   icon={faSquarePlus}
                   className="newbutton"
-                  onClick={newSavings}
+                  onClick={newAuto}
                 />
                 <h4 className="faTitle">Auto Transactions</h4>
               </div>
