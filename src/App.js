@@ -1097,8 +1097,8 @@ export default function App() {
     ddd = ddd.toISOString();
     ddd = ddd.slice(0, 10);
     const newArr = [
-      newId,  //had something called "AUTO" also as one input idk why
-      ddd,
+      newId,
+      "AUTO",  //NEED THIS BECAUSE THIS IS A TRANSACTION 
       data.acategory,
       data.aexpense,
       data.aincome,
@@ -1118,7 +1118,6 @@ export default function App() {
 
     const newArr = [
       newId,
-      "AUTO",
       "",
       "",
       0,
