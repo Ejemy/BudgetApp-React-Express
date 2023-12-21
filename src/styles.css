@@ -217,6 +217,7 @@ body{
 
 .auto-container{
   grid-area:auto;
+  overflow-y:scroll;
 }
 
 .autoTransaction{

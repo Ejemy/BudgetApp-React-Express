@@ -121,7 +121,7 @@ app.post("/delete", async (req,res)=> {
   console.log("DELETE TEST", req.body)
   try {
     
-    if(req.body[0][5] != undefined && req.body[0][4] != "savings" && req.body[0][5] != "aaa"){
+    if(req.body[0][5] && req.body[0][4] != "savings" && req.body[0][5] != "aaa"){
         const deletion = await Transaction.findOneAndDelete({_id: req.body[0][0]})
         return res.status(200).json({data: deletion})
     } else if(req.body[0][4] === "savings"){

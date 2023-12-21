@@ -398,10 +398,12 @@ export default function App() {
     Array(1).fill(["abc123", "", 0, 0, date])
   );
   const [total, setTotal] = useState(0); //budgeted total i think
+  
   //transaction = [id, name, date, category, expense, income]
   const [transaction, setTransaction] = useState(
     Array(1).fill(["123abc", "", "", "", 0, 0])
   );
+
   //Backend
   const [firstload, setFirstload] = useState(true);
   const [deleteBool, setDeletebool] = useState([false, []]);
@@ -410,6 +412,7 @@ export default function App() {
   const [savings, setSavings] = useState(
     Array(1).fill(["1a2b3c", "", 0, 0, "savings", date])
   );
+
   //auto transactions = [id, dateday, category, expense, income, "aaa"]
   const [autoTrans, setAutotrans] = useState(
     Array(1).fill(["xyz123", "", "", 0, 0, "aaa"])
