@@ -1098,11 +1098,11 @@ export default function App() {
     ddd = ddd.slice(0, 10);
     const newArr = [
       newId,
-      "AUTO",  //NEED THIS BECAUSE THIS IS A TRANSACTION 
+      "AUTO",  //NEED THIS BECAUSE THIS IS A TRANSACTION
+      data.adate, 
       data.acategory,
       data.aexpense,
-      data.aincome,
-      "aaa",
+      data.aincome
     ];
 
     return newArr;
@@ -1132,18 +1132,10 @@ export default function App() {
   function handleSave(stuff, index, data) {
     console.log("handleSAVE", data);
     const tempTrans = transaction.slice();
-    const dbdate = new Date(data[1]);
-    const dbMonth = dbdate.getMonth();
     //my payday is the 20th
     let checky = true;
     for (let i in tempTrans) {
-      const tdate = new Date(tempTrans[i][2]);
-      const tday = tdate.getDate();
-      const tmonth = tdate.getMonth();
-      const payday1 = tmonth === dbMonth + 1 && tday < 20;
-      const payday2 = tmonth === dbMonth && tday >= 20;
-      const payday = payday1 || payday2;
-      console.log(payday, tempTrans[i][3], data[2]);
+      const payday = calculatePayperiod(tempTrans[i][2]);
 
       if (payday && tempTrans[i][3] === data[2]) {
         checky = false;
