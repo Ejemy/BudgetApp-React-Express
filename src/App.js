@@ -517,16 +517,11 @@ export default function App() {
 
           //my payday is the 20th
           for (let i in data.transaction) {
-            const tdate = new Date(data.transaction[i].date);
-            const tmonth = tdate.getMonth();
-            const tday = tdate.getDate();
-            const payday1 = todayMonth === tmonth + 1 && todayDate <= tday;
-            const payday2 = todayMonth === tmonth && todayDate > tday;
-            const payday = payday1 || payday2;
-            console.log(payday);
+            const payperiod = calculatePayperiod(data.transaction[i].date)
+            console.log(payperiod);
             if (
               data.auto[a].acategory === data.transaction[i].category &&
-              payday
+              payperiod
             ) {
               checky = false;
               break;
