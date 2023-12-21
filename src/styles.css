@@ -217,13 +217,14 @@ body{
 
 .auto-container{
   grid-area:auto;
-  overflow-y:scroll;
 }
 
 .autoTransaction{
   border: black solid 3px;
   background-color: lightgoldenrodyellow;
   padding: 1em;
+  overflow-y:scroll;
+  
 }
 
 
