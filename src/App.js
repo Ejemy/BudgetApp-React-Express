@@ -560,7 +560,7 @@ export default function App() {
       })
         .then((response) => response.json())
         .then((data) => {
-          console.log("app.js category fetch: ", data);
+          console.log("app.js boxvalue/category fetch: ", data);
         });
     } else if (deleteBool[0]) {
       fetch("/delete", {
@@ -678,6 +678,35 @@ export default function App() {
     setTotal(total);
   }
 
+  function calculatePayperiod(theTrans){
+    const today = new Date();
+      const day = today.getDate();
+      const month = today.getMonth();
+
+    const ttoday = new Date(theTrans);
+        const tday = ttoday.getDate();
+        const tmonth = ttoday.getMonth();
+
+        const sameMonth = tmonth === month;
+        const bothOver20 = tday >= 20 && day >= 20;
+        const bothUnder20 = tday < 20 && day < 20;
+        const bothOverOrUnder = bothOver20 || bothUnder20;
+        
+        const criteria1 = sameMonth && bothOverOrUnder;
+
+        const differentMonths1 = tmonth === month -1;
+        const differentMonths2 = tmonth === month +1;
+        const different = differentMonths1 || differentMonths2;
+        const tover20 = tday >= 20;
+        const todayover20 = day >= 20;
+        const overOrUnder20 = tover20 || todayover20;
+
+        const criteria2 = different && overOrUnder20;
+
+        const payperiod = criteria1 || criteria2;
+        return payperiod;
+  }
+
   function handleInput(event, ind, id) {
     const nextBoxVal = boxvalue.slice();
     let val = event.target.value;
@@ -687,7 +716,7 @@ export default function App() {
     console.log("event id", event.target.id);
     //out transactions
     if (event.target.id === "out") {
-      console.log("ID", id);
+      console.log("handleInput()", event.target.id, id);
       //if OUT then cross check category names and change boxvalue?
       //This LOOP formats transaction numbers
       for (let index = 0; index < nextTransaction.length; index++) {
@@ -807,27 +836,24 @@ export default function App() {
     // Calculating SPENT in boxvalue
     for (let x = 0; x < nextBoxVal.length; x++) {
       let spent = 0;
-      const today = new Date();
-      const day = today.getDate();
-      const month = today.getMonth();
+      
 
       for (let ii = 0; ii < nextTransaction.length; ii++) {
-        const ttoday = new Date(nextTransaction[ii][2]);
-        const tday = ttoday.getDate();
-        const tmonth = ttoday.getMonth();
-        const pp1 = tmonth === month - 1 && tday >= 20; //is transaction dated after the 20th of last month or before the 20th of this month?
-        const pp2 = tmonth === month && tday < 20;
-        const payperiod = pp1 || pp2;
+        const pp = calculatePayperiod(nextTransaction[ii][2]);
+
+
         if (
           nextBoxVal[x][1] === nextTransaction[ii][3] && //if categories match, expense is present, and
           nextTransaction[ii][4] > 0 &&
-          payperiod
+          pp
         ) {
+          console.log("updating how much spent...")
           spent += nextTransaction[ii][4];
+          console.log("spent is... ", spent)
         } else if (
           nextBoxVal[x][1] === nextTransaction[ii][3] && //if categories match, income present, and
           nextTransaction[ii][5] > 0 &&
-          payperiod
+          pp
         ) {
           spent -= nextTransaction[ii][5];
         }

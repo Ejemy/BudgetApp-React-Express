@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const path = require("path")
 const url = process.env.MONGO_URI;
 
+
 const app = express();
 app.use(bodyParser.json());
 app.use(
@@ -33,6 +34,7 @@ app.post("/login", (req,res) => {
     res.json({ success: true })
   }
 })
+
 
 
 app.get("/load", async (req, res) => {
@@ -140,6 +142,6 @@ app.post("/delete", async (req,res)=> {
   }
 })
 
-app.listen(process.env.PORT || 5000, () => {
-    console.log("Server running on port ${PORT}")
+app.listen(5000 || process.env.PORT, () => {
+    console.log(`Server running on port: ${PORT} `)
 });
