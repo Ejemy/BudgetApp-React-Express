@@ -433,18 +433,12 @@ export default function App() {
         let sav = savings.slice();
         let aut = autoTrans.slice();
         const todaydate = new Date();
-        const todayDate = todaydate.getDate();
-        const todayMonth = todaydate.getMonth();
+        
         let pass = data.pass;
 
         for (let i in data.category) {
           const bdate = new Date(data.category[i].bdate);
-          const bDate = bdate.getDate();
-          const bMonth = bdate.getMonth();
-          //UPDATE LATER when serious
-          const payday1 = todayMonth === bMonth + 1 && todayDate < 20;
-          const payday2 = todayMonth === bMonth && todayDate >= 20;
-          const payday = payday1 || payday2;
+          const payday = calculatePayperiod(bdate);
           if (payday) {
             stuff[i] = [
               data.category[i]._id,
@@ -479,11 +473,8 @@ export default function App() {
         //if past or is payday, samount should be 0 and stotal should be combined with samount
         for (let s in data.savings) {
           const dbdate = new Date(data.savings[s].sdate);
-          const dbMonth = dbdate.getMonth();
           //my payday is the 20th
-          const payday1 = todayMonth === dbMonth + 1 && todayDate < 20;
-          const payday2 = todayMonth === dbMonth && todayDate >= 20;
-          const payday = payday1 || payday2;
+          const payday = calculatePayperiod(dbdate);
           if (payday) {
             sav[s] = [
               data.savings[s]._id,
@@ -708,7 +699,7 @@ export default function App() {
     const criteria3 = decAndJan && overAndUnder20; 
 
     const payperiod = criteria1 || criteria2 || criteria3;
-
+    console.log("within payperiod? ", payperiod)
     return payperiod;
   }
 
@@ -1102,14 +1093,20 @@ export default function App() {
     const ranLet = abc[Math.floor(Math.random() * abc.length)];
     const ranLet2 = abc[Math.floor(Math.random() * abc.length)];
     const newId = ranNum + ranLet + ranNum2 + ranLet2;
-    const today = new Date();
+
     let ddd = new Date(data.adate);
+    const ddate = ddd.toString();
+    const day = ddate.slice(8, 10)
+    const today = new Date();
+    const totoday = today.toString();
+    const monthyear = totoday.slice(0,7)
+    ddd = monthyear + " " + day;
     ddd = ddd.toISOString();
     ddd = ddd.slice(0, 10);
     const newArr = [
       newId,
       "AUTO",  //NEED THIS BECAUSE THIS IS A TRANSACTION
-      data.adate,
+      ddd,
       data.acategory,
       data.aexpense,
       data.aincome
