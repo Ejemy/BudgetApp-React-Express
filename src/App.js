@@ -398,7 +398,7 @@ export default function App() {
     Array(1).fill(["abc123", "", 0, 0, date])
   );
   const [total, setTotal] = useState(0); //budgeted total i think
-  
+
   //transaction = [id, name, date, category, expense, income]
   const [transaction, setTransaction] = useState(
     Array(1).fill(["123abc", "", "", "", 0, 0])
@@ -529,7 +529,7 @@ export default function App() {
               checky = false;
               break;
             }
-            if(data.auto[a].acategory === ""){
+            if (data.auto[a].acategory === "") {
               checky = false;
               break;
             }
@@ -676,33 +676,36 @@ export default function App() {
     setTotal(total);
   }
 
-  function calculatePayperiod(theTrans){
+  function calculatePayperiod(theTrans) {
     const today = new Date();
-      const day = today.getDate();
-      const month = today.getMonth();
+    const day = today.getDate();
+    const month = today.getMonth();
 
     const ttoday = new Date(theTrans);
-        const tday = ttoday.getDate();
-        const tmonth = ttoday.getMonth();
+    const tday = ttoday.getDate();
+    const tmonth = ttoday.getMonth();
 
-        const sameMonth = tmonth === month;
-        const bothOver20 = tday >= 20 && day >= 20;
-        const bothUnder20 = tday < 20 && day < 20;
-        const bothOverOrUnder = bothOver20 || bothUnder20;
-        
-        const criteria1 = sameMonth && bothOverOrUnder;
+    const sameMonth = tmonth === month;
+    const bothOver20 = tday >= 20 && day >= 20;
+    const bothUnder20 = tday < 20 && day < 20;
+    const bothOverOrUnder = bothOver20 || bothUnder20;
 
-        const differentMonths1 = tmonth === month -1;
-        const differentMonths2 = tmonth === month +1;
-        const different = differentMonths1 || differentMonths2;
-        const tover20 = tday >= 20;
-        const todayover20 = day >= 20;
-        const overOrUnder20 = tover20 || todayover20;
+    const criteria1 = sameMonth && bothOverOrUnder;
 
-        const criteria2 = different && overOrUnder20;
+    const differentMonths1 = tmonth === month - 1;
+    const differentMonths2 = tmonth === month + 1;
+    const different = differentMonths1 || differentMonths2;
+    const tover20 = tday >= 20;
+    const todayover20 = day >= 20;
+    const overOrUnder20 = tover20 || todayover20;
 
-        const payperiod = criteria1 || criteria2;
-        return payperiod;
+    const criteria2 = different && overOrUnder20;
+
+    const oneIsDec = tmonth === 12 || month === 12;
+
+    const payperiod = criteria1 || criteria2;
+    console.log("payperiod", payperiod)
+    return payperiod;
   }
 
   function handleInput(event, ind, id) {
@@ -834,7 +837,7 @@ export default function App() {
     // Calculating SPENT in boxvalue
     for (let x = 0; x < nextBoxVal.length; x++) {
       let spent = 0;
-      
+
 
       for (let ii = 0; ii < nextTransaction.length; ii++) {
         const pp = calculatePayperiod(nextTransaction[ii][2]);
@@ -1102,7 +1105,7 @@ export default function App() {
     const newArr = [
       newId,
       "AUTO",  //NEED THIS BECAUSE THIS IS A TRANSACTION
-      data.adate, 
+      data.adate,
       data.acategory,
       data.aexpense,
       data.aincome
@@ -1111,7 +1114,7 @@ export default function App() {
     return newArr;
   }
 
-  function newAuto(){
+  function newAuto() {
     const abc = "abcdefghijklmnopqrstuvwxyz!#$%";
     const ranNum = Math.floor(Math.random() * 100);
     const ranNum2 = Math.floor(Math.random() * 100);
