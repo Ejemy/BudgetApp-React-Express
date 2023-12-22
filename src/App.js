@@ -538,6 +538,9 @@ export default function App() {
 
   useEffect(() => {
     console.log("BOXVALUE WAS SET")
+    const sa = [...savings];
+    const box = [...boxvalue];
+    calculateTotal(sa, box);
     if (!firstload && !deleteBool[0]) {
       fetch("/update", {
         method: "POST",
