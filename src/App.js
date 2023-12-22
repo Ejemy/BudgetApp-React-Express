@@ -532,8 +532,12 @@ export default function App() {
         setSavings(sav);
         setAutotrans(aut);
         setBoxvalue(stuff);
-        calculateTotal(sav, stuff);
-        setFirstload(false);
+        const calculateAndSetTotal = async (sav, stuff) => {
+          await calculateTotal(sav, stuff);
+          setFirstload(false);
+        };
+        
+        calculateAndSetTotal(sav, stuff);
       });
   }, []);
 
