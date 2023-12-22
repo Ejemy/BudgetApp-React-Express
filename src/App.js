@@ -194,7 +194,7 @@ function Row({
         placeholder="Date"
         className="date"
         type="date"
-        value={data[2]}//.toString().slice(0, 10)
+        value={data[2].toString().slice(0, 10)}
         onChange={(eventD) => {
           handleDate(eventD, index, data[0]);
         }}
@@ -433,7 +433,7 @@ export default function App() {
         let sav = savings.slice();
         let aut = autoTrans.slice();
         const todaydate = new Date();
-        
+
         for (let i in data.category) {
           const bdate = new Date(data.category[i].bdate);
           const payday = calculatePayperiod(bdate);
@@ -694,7 +694,7 @@ export default function App() {
     const oneIsJan = tmonth === 0 || month === 0;
     const decAndJan = oneIsDec && oneIsJan;
 
-    const criteria3 = decAndJan && overAndUnder20; 
+    const criteria3 = decAndJan && overAndUnder20;
 
     const payperiod = criteria1 || criteria2 || criteria3;
     console.log("within payperiod? ", payperiod)
@@ -1098,11 +1098,11 @@ export default function App() {
 
     const today = new Date();
     const totoday = today.toString();
-    const monthday = totoday.slice(0,7)
+    const monthday = totoday.slice(0, 7)
     const year = totoday.slice(10, 15)
     ddd = monthday + " " + day + " " + year;
     const newdate = new Date(ddd);
-    
+
     const newArr = [
       newId,
       "AUTO",  //NEED THIS BECAUSE THIS IS A TRANSACTION
@@ -1216,31 +1216,33 @@ export default function App() {
           </form>
         </div>
       )}
-      <div className="title-container">
-        <h1 className="dateTitle">
-          {(() => {
-            const date = new Date();
-            const months = [
-              "January",
-              "February",
-              "March",
-              "April",
-              "May",
-              "June",
-              "July",
-              "August",
-              "September",
-              "October",
-              "November",
-              "December",
-            ];
-            const month = date.getMonth();
-            const year = date.getFullYear();
+      {!toggleLock && (
+        <div className="title-container">
+          <h1 className="dateTitle">
+            {(() => {
+              const date = new Date();
+              const months = [
+                "January",
+                "February",
+                "March",
+                "April",
+                "May",
+                "June",
+                "July",
+                "August",
+                "September",
+                "October",
+                "November",
+                "December",
+              ];
+              const month = date.getMonth();
+              const year = date.getFullYear();
 
-            return "Budget of " + months[month] + " " + year;
-          })()}
-        </h1>
-      </div>
+              return "Budget of " + months[month] + " " + year;
+            })()}
+          </h1>
+        </div>
+      )}
       {!toggleLock && (
         <div className="total-amount" id="total">
           <Totals tots={total} transaction={transaction} />
