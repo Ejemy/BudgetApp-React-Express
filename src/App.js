@@ -434,8 +434,6 @@ export default function App() {
         let aut = autoTrans.slice();
         const todaydate = new Date();
         
-        let pass = data.pass;
-
         for (let i in data.category) {
           const bdate = new Date(data.category[i].bdate);
           const payday = calculatePayperiod(bdate);
@@ -512,7 +510,6 @@ export default function App() {
           //my payday is the 20th
           for (let i in data.transaction) {
             const payperiod = calculatePayperiod(data.transaction[i].date)
-            console.log(payperiod);
             if (
               data.auto[a].acategory === data.transaction[i].category &&
               payperiod
@@ -541,6 +538,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    console.log("BOXVALUE WAS SET")
     if (!firstload && !deleteBool[0]) {
       fetch("/update", {
         method: "POST",
