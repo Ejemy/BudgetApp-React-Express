@@ -37,13 +37,13 @@ app.post("/login", (req,res) => {
 
 
 
-app.post("/load", async (req, res) => {
+app.get("/load", async (req, res) => {
   try {
     const data = await Category.find({})
     const transD = await Transaction.find({})
     const savingsD = await Savings.find({})
     const autoD = await Autotrans.find({})
-
+    
     const combinedData = {category: data, transaction: transD, savings: savingsD, auto: autoD}
     return res.json(combinedData);
    
