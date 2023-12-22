@@ -118,11 +118,11 @@ app.post("/update", async (req, res) => {
  
 
 app.post("/delete", async (req,res)=> {
-  console.log("DELETE TEST", req.body)
   try {
     
     if(req.body[0][5] && req.body[0][4] != "savings" && req.body[0][5] != "aaa"){
         const deletion = await Transaction.findOneAndDelete({_id: req.body[0][0]})
+        console.log("Deleting: ", req.body)
         return res.status(200).json({data: deletion})
     } else if(req.body[0][4] === "savings"){
       const deletion = await Savings.findOneAndDelete({_id: req.body[0][0]})

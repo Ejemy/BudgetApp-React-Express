@@ -527,12 +527,11 @@ export default function App() {
             transstuff.push(addNewAuto(data.auto[a]));
           }
         }
-
+        calculateTotal(sav, stuff);
         setTransaction(transstuff);
         setSavings(sav);
         setAutotrans(aut);
         setBoxvalue(stuff);
-        calculateTotal(sav, stuff);
         setFirstload(false);
       });
   }, []);
@@ -973,7 +972,7 @@ export default function App() {
 
   function handleDelete(val, index, id) {
     const tempBox = boxvalue.slice();
-    const tempTrans = transaction.slice();
+    const tempTrans = [...transaction];
     const tempSavings = savings.slice();
     const tempAuto = autoTrans.slice();
 
@@ -1000,7 +999,7 @@ export default function App() {
         const deleteItem = tempTrans.slice(t, t + 1);
         tempTrans.splice(t, 1);
         if (!tempTrans[0]) {
-          tempTrans[0] = ["123abc", "", "", "", 0, 0];
+          tempTrans[0] = ["dfbgdser5", "", "", "", 0, 0];
         }
 
         setDeletebool([true, deleteItem]);
