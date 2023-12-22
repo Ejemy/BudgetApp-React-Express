@@ -1103,6 +1103,7 @@ export default function App() {
     ddd = monthyear + " " + day;
     ddd = ddd.toISOString();
     ddd = ddd.slice(0, 10);
+    
     const newArr = [
       newId,
       "AUTO",  //NEED THIS BECAUSE THIS IS A TRANSACTION
