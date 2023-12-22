@@ -532,12 +532,8 @@ export default function App() {
         setSavings(sav);
         setAutotrans(aut);
         setBoxvalue(stuff);
-        const calculateAndSetTotal = async (sav, stuff) => {
-          await calculateTotal(sav, stuff);
-          setFirstload(false);
-        };
-        
-        calculateAndSetTotal(sav, stuff);
+        calculateTotal(sav, stuff);
+        setFirstload(false);
       });
   }, []);
 
@@ -1097,19 +1093,20 @@ export default function App() {
     const newId = ranNum + ranLet + ranNum2 + ranLet2;
 
     let ddd = new Date(data.adate);
-    const ddate = ddd.toString();
-    const day = ddate.slice(8, 10)
+    const ddate = ddd.toString(); // Fri Dec 22 2022
+    const day = ddate.slice(8, 10) //Fri Dec 2 2220
+
     const today = new Date();
     const totoday = today.toString();
-    const monthyear = totoday.slice(0,7)
-    ddd = monthyear + " " + day;
-    ddd = ddd.toISOString();
-    ddd = ddd.slice(0, 10);
+    const monthday = totoday.slice(0,7)
+    const year = totoday.slice(10, 15)
+    ddd = monthday + " " + day + " " + year;
+    const newdate = new Date(ddd);
     
     const newArr = [
       newId,
       "AUTO",  //NEED THIS BECAUSE THIS IS A TRANSACTION
-      ddd,
+      newdate,
       data.acategory,
       data.aexpense,
       data.aincome
