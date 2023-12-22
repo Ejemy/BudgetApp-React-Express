@@ -194,7 +194,7 @@ function Row({
         placeholder="Date"
         className="date"
         type="date"
-        value={data[2].slice(0, 10)}
+        value={data[2]}//.toString().slice(0, 10)
         onChange={(eventD) => {
           handleDate(eventD, index, data[0]);
         }}
