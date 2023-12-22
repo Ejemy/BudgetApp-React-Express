@@ -697,14 +697,18 @@ export default function App() {
     const different = differentMonths1 || differentMonths2;
     const tover20 = tday >= 20;
     const todayover20 = day >= 20;
-    const overOrUnder20 = tover20 || todayover20;
+    const overAndUnder20 = tover20 || todayover20;
 
-    const criteria2 = different && overOrUnder20;
+    const criteria2 = different && overAndUnder20;
 
-    const oneIsDec = tmonth === 12 || month === 12;
+    const oneIsDec = tmonth === 11 || month === 11;
+    const oneIsJan = tmonth === 0 || month === 0;
+    const decAndJan = oneIsDec && oneIsJan;
 
-    const payperiod = criteria1 || criteria2;
-    console.log("payperiod", payperiod)
+    const criteria3 = decAndJan && overAndUnder20; 
+
+    const payperiod = criteria1 || criteria2 || criteria3;
+
     return payperiod;
   }
 
