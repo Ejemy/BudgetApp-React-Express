@@ -37,7 +37,7 @@ app.post("/login", (req,res) => {
 
 
 
-app.get("/load", async (req, res) => {
+app.post("/load", async (req, res) => {
   try {
     const data = await Category.find({})
     const transD = await Transaction.find({})
