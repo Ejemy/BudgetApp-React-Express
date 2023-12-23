@@ -527,7 +527,7 @@ export default function App() {
             transstuff.push(addNewAuto(data.auto[a]));
           }
         }
-        calculateTotal(sav, stuff);
+        //calculateTotal(sav, stuff);
         setTransaction(transstuff);
         setSavings(sav);
         setAutotrans(aut);
@@ -566,6 +566,9 @@ export default function App() {
   }, [boxvalue]);
 
   useEffect(() => {
+    const sa = [...savings];
+    const box = [...boxvalue];
+    calculateTotal(sa, box);
     if (!firstload && !deleteBool[0]) {
       console.log("transaction state", transaction);
       fetch("/update", {
@@ -592,6 +595,9 @@ export default function App() {
   }, [transaction]);
 
   useEffect(() => {
+    const sa = [...savings];
+    const box = [...boxvalue];
+    calculateTotal(sa, box);
     if (!firstload && !deleteBool[0]) {
       console.log("savings state", savings);
       fetch("/update", {
@@ -769,7 +775,7 @@ export default function App() {
           ];
         }
       }
-      calculateTotal(tempSavings, nextBoxVal);
+      //calculateTotal(tempSavings, nextBoxVal);
     } else if (event.target.id === "savings") {
       //update savings amount
       for (let i = 0; i < tempSavings.length; i++) {
@@ -787,7 +793,7 @@ export default function App() {
             tempSavings[i][4],
             tempSavings[i][5],
           ];
-          calculateTotal(tempSavings, nextBoxVal);
+          //calculateTotal(tempSavings, nextBoxVal);
         }
       }
     } else if (event.target.id === "autoout") {
@@ -1019,7 +1025,7 @@ export default function App() {
         if (!tempSavings[0]) {
           tempSavings[0] = ["kljasdf", "", 0, 0, "savings", date];
         }
-        calculateTotal(tempSavings, tempBox);
+        //calculateTotal(tempSavings, tempBox);
         setDeletebool([true, deleteItem]);
         setSavings(tempSavings);
       }
