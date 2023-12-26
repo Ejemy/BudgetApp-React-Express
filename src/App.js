@@ -527,20 +527,19 @@ export default function App() {
             transstuff.push(addNewAuto(data.auto[a]));
           }
         }
-        //calculateTotal(sav, stuff);
+
         setTransaction(transstuff);
         setSavings(sav);
         setAutotrans(aut);
         setBoxvalue(stuff);
+        calculateSpentandSetBV(stuff, transstuff);
+        calculateTotal(sav, stuff);
         setFirstload(false);
       });
   }, []);
 
   useEffect(() => {
     console.log("BOXVALUE WAS SET")
-    const sa = [...savings];
-    const box = [...boxvalue];
-    calculateTotal(sa, box);
     if (!firstload && !deleteBool[0]) {
       fetch("/update", {
         method: "POST",
@@ -563,12 +562,10 @@ export default function App() {
         });
       setDeletebool([false, []]);
     }
+
   }, [boxvalue]);
 
   useEffect(() => {
-    const sa = [...savings];
-    const box = [...boxvalue];
-    calculateTotal(sa, box);
     if (!firstload && !deleteBool[0]) {
       console.log("transaction state", transaction);
       fetch("/update", {
@@ -590,14 +587,13 @@ export default function App() {
         .then((data) => {
           console.log("app.js transaction DELETE fetch: ", data);
         });
+
       setDeletebool([false, []]);
     }
+    //calculateTotal(savings, boxvalue)
   }, [transaction]);
 
   useEffect(() => {
-    const sa = [...savings];
-    const box = [...boxvalue];
-    calculateTotal(sa, box);
     if (!firstload && !deleteBool[0]) {
       console.log("savings state", savings);
       fetch("/update", {
@@ -709,6 +705,42 @@ export default function App() {
     return payperiod;
   }
 
+
+  function calculateSpentandSetBV(nextBoxVal, nextTransaction){
+    for (let x = 0; x < nextBoxVal.length; x++) {
+      let spent = 0;
+
+
+      for (let ii = 0; ii < nextTransaction.length; ii++) {
+        const pp = calculatePayperiod(nextTransaction[ii][2]);
+
+
+        if (
+          nextBoxVal[x][1] === nextTransaction[ii][3] && //if categories match, expense is present, and
+          nextTransaction[ii][4] > 0 &&
+          pp
+        ) {
+          console.log("updating how much spent...")
+          spent += nextTransaction[ii][4];
+          console.log("spent is... ", spent)
+        } else if (
+          nextBoxVal[x][1] === nextTransaction[ii][3] && //if categories match, income present, and
+          nextTransaction[ii][5] > 0 &&
+          pp
+        ) {
+          spent -= nextTransaction[ii][5];
+        }
+      }
+      nextBoxVal[x] = [
+        nextBoxVal[x][0],
+        nextBoxVal[x][1],
+        nextBoxVal[x][2],
+        spent,
+        nextBoxVal[x][4],
+      ];
+    }
+    setBoxvalue(nextBoxVal);
+  }
   function handleInput(event, ind, id) {
     const nextBoxVal = boxvalue.slice();
     let val = event.target.value;
@@ -775,7 +807,7 @@ export default function App() {
           ];
         }
       }
-      //calculateTotal(tempSavings, nextBoxVal);
+      calculateTotal(tempSavings, nextBoxVal);
     } else if (event.target.id === "savings") {
       //update savings amount
       for (let i = 0; i < tempSavings.length; i++) {
@@ -793,7 +825,7 @@ export default function App() {
             tempSavings[i][4],
             tempSavings[i][5],
           ];
-          //calculateTotal(tempSavings, nextBoxVal);
+          calculateTotal(tempSavings, nextBoxVal);
         }
       }
     } else if (event.target.id === "autoout") {
@@ -836,40 +868,8 @@ export default function App() {
       }
     }
     // Calculating SPENT in boxvalue
-    for (let x = 0; x < nextBoxVal.length; x++) {
-      let spent = 0;
-
-
-      for (let ii = 0; ii < nextTransaction.length; ii++) {
-        const pp = calculatePayperiod(nextTransaction[ii][2]);
-
-
-        if (
-          nextBoxVal[x][1] === nextTransaction[ii][3] && //if categories match, expense is present, and
-          nextTransaction[ii][4] > 0 &&
-          pp
-        ) {
-          console.log("updating how much spent...")
-          spent += nextTransaction[ii][4];
-          console.log("spent is... ", spent)
-        } else if (
-          nextBoxVal[x][1] === nextTransaction[ii][3] && //if categories match, income present, and
-          nextTransaction[ii][5] > 0 &&
-          pp
-        ) {
-          spent -= nextTransaction[ii][5];
-        }
-      }
-      nextBoxVal[x] = [
-        nextBoxVal[x][0],
-        nextBoxVal[x][1],
-        nextBoxVal[x][2],
-        spent,
-        nextBoxVal[x][4],
-      ];
-    }
+    calculateSpentandSetBV(nextBoxVal, nextTransaction);
     setSavings(tempSavings);
-    setBoxvalue(nextBoxVal);
     setTransaction(nextTransaction);
     setAutotrans(tempAuto);
   }
@@ -981,7 +981,7 @@ export default function App() {
 
   function handleDelete(val, index, id) {
     const tempBox = boxvalue.slice();
-    const tempTrans = [...transaction];
+    const tempTrans = transaction.slice();
     const tempSavings = savings.slice();
     const tempAuto = autoTrans.slice();
 
@@ -1008,7 +1008,7 @@ export default function App() {
         const deleteItem = tempTrans.slice(t, t + 1);
         tempTrans.splice(t, 1);
         if (!tempTrans[0]) {
-          tempTrans[0] = ["dfbgdser5", "", "", "", 0, 0];
+          tempTrans[0] = ["123abc", "", "", "", 0, 0];
         }
 
         setDeletebool([true, deleteItem]);
@@ -1025,7 +1025,7 @@ export default function App() {
         if (!tempSavings[0]) {
           tempSavings[0] = ["kljasdf", "", 0, 0, "savings", date];
         }
-        //calculateTotal(tempSavings, tempBox);
+        calculateTotal(tempSavings, tempBox);
         setDeletebool([true, deleteItem]);
         setSavings(tempSavings);
       }
