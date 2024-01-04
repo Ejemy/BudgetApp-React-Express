@@ -15,5 +15,7 @@ Frontend is React and backend I am using Node.JS for backend and store data in a
 ## Setup
 1. Clone this project locally.
 2. Run `npm install`.
-3. Run `npm run build`.
-4. Finally, run `npm start`.
+3. Change the MongoDB env secrets to your setup.
+4. Change the login code env to your preference. (inside the server.js file)
+5. Run `npm run build`.
+6. Finally, run `npm start`.
