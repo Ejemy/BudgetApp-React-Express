@@ -19,3 +19,6 @@ Frontend is React and backend I am using Node.JS for backend and store data in a
 4. Change the login code env to your preference. (inside the server.js file)
 5. Run `npm run build`.
 6. Finally, run `npm start`.
+
+## LIVE DEMO
+[passcode is 12345](https://budget-live-ec052b4150be.herokuapp.com/)
