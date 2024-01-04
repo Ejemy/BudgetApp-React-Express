@@ -11,3 +11,9 @@ Frontend is React and backend I am using Node.JS for backend and store data in a
 ## Dependencies
 - react
 - nodejs
+
+## Setup
+1. Clone this project locally.
+2. Run `npm install`.
+3. Run `npm run build`.
+4. Finally, run `npm start`.
