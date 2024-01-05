@@ -28,6 +28,19 @@ let Transaction = db.model("Transaction", transactionSchema)
 let Savings = db.model("Savings", savingsSchema)
 let Autotrans = db.model("Autotrans", autoTranSchema)
 
+async function createMissingCollections(){
+  try {
+    await Category.createCollection();
+    await Transaction.createCollection();
+    await Savings.createCollection();
+    await Autotrans.createCollection();
+  }
+  catch (errors) {
+    console.log("collection creation error", errors)
+  }
+}
+
+
 app.post("/login", (req,res) => {
   console.log(req.body)
   if(req.body.passcode === process.env.PASS_KEY){
@@ -38,6 +51,9 @@ app.post("/login", (req,res) => {
 
 
 app.get("/load", async (req, res) => {
+
+  await createMissingCollections();
+
   try {
     const data = await Category.find({})
     const transD = await Transaction.find({})
@@ -46,12 +62,8 @@ app.get("/load", async (req, res) => {
     
     const combinedData = {category: data, transaction: transD, savings: savingsD, auto: autoD}
 
-    if(!combinedData){
-      return res.json({})
-    }
-    else{
-      return res.json(combinedData);
-    }
+    return res.json(combinedData);
+    
     
    
   } catch (err) {
