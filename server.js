@@ -45,7 +45,14 @@ app.get("/load", async (req, res) => {
     const autoD = await Autotrans.find({})
     
     const combinedData = {category: data, transaction: transD, savings: savingsD, auto: autoD}
-    return res.json(combinedData);
+
+    if(!combinedData){
+      return res.json({})
+    }
+    else{
+      return res.json(combinedData);
+    }
+    
    
   } catch (err) {
     console.error("ERR:", err);
