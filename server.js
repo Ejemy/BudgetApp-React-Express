@@ -16,8 +16,7 @@ app.use(
 app.use(express.static(path.join(__dirname, 'build')))
 
 
-async function main() {
-  const db = await mongoose.createConnection(url, { useNewUrlParser: true, useUnifiedTopology: true })
+  const db = mongoose.createConnection(url, { useNewUrlParser: true, useUnifiedTopology: true })
 
   var categorySchema = new mongoose.Schema({ _id: String, name: String, amount: Number, spent: Number, bdate: String });
   var transactionSchema = new mongoose.Schema({ _id: String, tname: String, date: Date, category: String, expense: Number, income: Number })
@@ -28,20 +27,6 @@ async function main() {
   let Savings = db.model("Savings", savingsSchema)
   let Autotrans = db.model("Autotrans", autoTranSchema)
 
-  /*
-  async function createMissingCollections(){
-    try {
-      await Category.createCollection();
-      await Transaction.createCollection();
-      await Savings.createCollection();
-      await Autotrans.createCollection();
-    }
-    catch (errors) {
-      console.log("collection creation error", errors)
-    }
-  }
-  createMissingCollections();
-  */
 
   app.post("/login", (req, res) => {
     console.log(req.body)
@@ -164,9 +149,3 @@ async function main() {
     console.log(`Server running on port: ${process.env.PORT} `)
   });
 
-
-
-
-}
-
-main();
