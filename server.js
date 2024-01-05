@@ -39,6 +39,7 @@ async function createMissingCollections(){
     console.log("collection creation error", errors)
   }
 }
+createMissingCollections();
 
 
 app.post("/login", (req,res) => {
@@ -52,7 +53,6 @@ app.post("/login", (req,res) => {
 
 app.get("/load", async (req, res) => {
 
-  await createMissingCollections();
 
   try {
     const data = await Category.find({})
