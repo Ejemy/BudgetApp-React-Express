@@ -40,7 +40,7 @@ app.use(express.static(path.join(__dirname, 'build')))
   app.get("/load", async (req, res) => {
     try {
       const data = await Category.find({})
-      const transD = await Transaction.find({}).sort({date: -1})
+      const transD = await Transaction.find({}) //.sort({date: 1}) I should look into pagination
       const savingsD = await Savings.find({})
       const autoD = await Autotrans.find({})
 
