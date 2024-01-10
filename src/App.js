@@ -527,7 +527,7 @@ export default function App() {
             transstuff.push(addNewAuto(data.auto[a]));
           }
         }
-        transstuff.sort((a,b)=>{return new Date(a[2]) - new Date(b[2])});
+        //transstuff.sort((a,b)=>{return new Date(a[2]) - new Date(b[2])});
 
         setTransaction(transstuff);
         setSavings(sav);
