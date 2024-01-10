@@ -527,6 +527,7 @@ export default function App() {
             transstuff.push(addNewAuto(data.auto[a]));
           }
         }
+        //sorting the state like this breaks the program. Get 503 errors for updates to transactions.
         //transstuff.sort((a,b)=>{return new Date(a[2]) - new Date(b[2])});
 
         setTransaction(transstuff);
