@@ -188,6 +188,7 @@ function Row({
   handleDate,
   handleDelete,
 }) {
+  console.log(index)
   return (
     <div className="row-transaction">
       <input
@@ -527,8 +528,9 @@ export default function App() {
             transstuff.push(addNewAuto(data.auto[a]));
           }
         }
+        const sortedTrans = transstuff.sort((a,b)=>{return new Date(a[2]) - new Date(b[2])})
 
-        setTransaction(transstuff);
+        setTransaction(sortedTrans);
         setSavings(sav);
         setAutotrans(aut);
         setBoxvalue(stuff);
@@ -590,7 +592,7 @@ export default function App() {
 
       setDeletebool([false, []]);
     }
-    //calculateTotal(savings, boxvalue)
+    
   }, [transaction]);
 
   useEffect(() => {
