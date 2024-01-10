@@ -527,9 +527,9 @@ export default function App() {
             transstuff.push(addNewAuto(data.auto[a]));
           }
         }
-        const sortedTrans = transstuff.sort((a,b)=>{return new Date(a[2]) - new Date(b[2])})
-
-        setTransaction(sortedTrans);
+        transstuff.sort((a,b)=>{return new Date(a[2]) - new Date(b[2])});
+        
+        setTransaction(transstuff);
         setSavings(sav);
         setAutotrans(aut);
         setBoxvalue(stuff);
