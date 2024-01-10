@@ -568,7 +568,8 @@ export default function App() {
 
   useEffect(() => {
     if (!firstload && !deleteBool[0]) {
-      console.log("transaction state", transaction);
+      console.log("transaction state", typeof transaction, transaction);
+
       fetch("/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
