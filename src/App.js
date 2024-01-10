@@ -528,7 +528,7 @@ export default function App() {
           }
         }
         transstuff.sort((a,b)=>{return new Date(a[2]) - new Date(b[2])});
-        
+
         setTransaction(transstuff);
         setSavings(sav);
         setAutotrans(aut);
@@ -574,7 +574,12 @@ export default function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(transaction),
       })
-        .then((response) => response.json())
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`Network response was not ok: ${response.status}`);
+          }
+          return response.json();
+        })
         .then((data) => {
           console.log("app.js transaction fetch: ", data);
         });
