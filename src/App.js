@@ -188,7 +188,6 @@ function Row({
   handleDate,
   handleDelete,
 }) {
-  console.log(index)
   return (
     <div className="row-transaction">
       <input
