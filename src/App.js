@@ -313,14 +313,14 @@ function Totals({ tots, transaction, budget }) {
       income += transaction[i][5];
     }
   }
-  for (let x in budget){
+  for (let x in budget) {
     const remaining = budget[x][2] - budget[x][3];
-    if(remaining <= budget[x][2]){
+    if (remaining <= budget[x][2]) {
       total += budget[x][2]
     } else {
       totalRemaining += remaining
     }
-    
+
   }
 
   const actual = income + expense;
@@ -414,7 +414,7 @@ export default function App() {
   );
 
   //budgeted total i think
-  const [total, setTotal] = useState(0); 
+  const [total, setTotal] = useState(0);
 
   //transaction = [id, name, date, category, expense, income]
   const [transaction, setTransaction] = useState(
@@ -615,7 +615,7 @@ export default function App() {
 
       setDeletebool([false, []]);
     }
-    
+
   }, [transaction]);
 
   useEffect(() => {
@@ -731,7 +731,7 @@ export default function App() {
   }
 
 
-  function calculateSpentandSetBV(nextBoxVal, nextTransaction){
+  function calculateSpentandSetBV(nextBoxVal, nextTransaction) {
     for (let x = 0; x < nextBoxVal.length; x++) {
       let spent = 0;
 
@@ -1231,175 +1231,185 @@ export default function App() {
     }
   };
 
-  return (
-    <div className="App">
-      {toggleLock && (
-        <div className="lock" id="loginDiv" onSubmit={handlelogSubmit}>
-          <form id="loginForm" action="/login" method="post">
-            <h1>PASSCODE</h1>
-            <input
-              type="password"
-              id="passcode"
-              name="passcode"
-              className="pass"
-              onChange={(e) => setPasscode(e.target.value)}
-            />{" "}
-            <br /> <br />
-            <input className="submitbutton" type="submit" value="submit" />
-          </form>
-        </div>
-      )}
-      {!toggleLock && (
-        <div className="title-container">
-          <h1 className="dateTitle">
-            {(() => {
-              const date = new Date();
-              const months = [
-                "January",
-                "February",
-                "March",
-                "April",
-                "May",
-                "June",
-                "July",
-                "August",
-                "September",
-                "October",
-                "November",
-                "December",
-              ];
-              const month = date.getMonth();
-              const year = date.getFullYear();
+  function sort() {
+    let t = transaction.slice();
+    const tt = t.sort((a, b) => {return new Date(a[2]) - new Date(b[2]) });
+    console.log("T", tt);
+    setTransaction(tt);
+  }
 
-              return "Budget of " + months[month] + " " + year;
-            })()}
-          </h1>
-        </div>
-      )}
-      {!toggleLock && (
-        <div className="total-amount" id="total">
-          <Totals tots={total} transaction={transaction} budget={boxvalue} />
-        </div>
-      )}
-      {!toggleLock && (
-        <div className="auto-container">
-          <button onClick={showAuto}>Auto Transactions</button>
-          {toggleAuto && (
-            <div className="autoTransaction">
-              <div className="new-savings">
-                <FontAwesomeIcon
-                  icon={faSquarePlus}
-                  className="newbutton"
-                  onClick={newAuto}
-                />
-                <h4 className="faTitle">Auto Transactions</h4>
-              </div>
-              {autoTrans.map((value, index) => (
-                <AutoRow
-                  data={value}
-                  index={index}
-                  autotransData={autoTrans}
-                  boxvalue={boxvalue}
-                  handleCatOption={handleCatOption}
-                  saveAuto={(x, y, z) => saveAuto(x, y, z)}
-                  inputCallback={(x, y, z) => handleInput(x, y, z)}
-                  nameCallback={(x, y, z) => transName(x, y, z)}
-                  handleDate={(x, y, z) => handleDate(x, y, z)}
-                  handleDelete={handleDelete}
-                  handleSave={(x, y, z) => handleSave(x, y, z)}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-      {!toggleLock && (
-        <div className="budget-container">
-          <div className="newcat">
-            <NewBox title="New Category" handleClick={handleNewCat} />
-          </div>
-          <div className="budget-titles">
-            <p>Category</p>
-            <p>Budgeted</p>
-            <p>Remaining</p>
-          </div>
-          <div className="budget">
-            {boxvalue.map((value, index) => (
-              <Budget
-                value={value}
-                index={index}
-                handleDelete={handleDelete}
-                handleCatName={(x, y, z) => handleCatName(x, y, z)}
-                handleInput={(x, y, z) => handleInput(x, y, z)}
-                box={boxvalue}
+
+
+return (
+  <div className="App">
+    {toggleLock && (
+      <div className="lock" id="loginDiv" onSubmit={handlelogSubmit}>
+        <form id="loginForm" action="/login" method="post">
+          <h1>PASSCODE</h1>
+          <input
+            type="password"
+            id="passcode"
+            name="passcode"
+            className="pass"
+            onChange={(e) => setPasscode(e.target.value)}
+          />{" "}
+          <br /> <br />
+          <input className="submitbutton" type="submit" value="submit" />
+        </form>
+      </div>
+    )}
+    {!toggleLock && (
+      <div className="title-container">
+        <h1 className="dateTitle">
+          {(() => {
+            const date = new Date();
+            const months = [
+              "January",
+              "February",
+              "March",
+              "April",
+              "May",
+              "June",
+              "July",
+              "August",
+              "September",
+              "October",
+              "November",
+              "December",
+            ];
+            const month = date.getMonth();
+            const year = date.getFullYear();
+
+            return "Budget of " + months[month] + " " + year;
+          })()}
+        </h1>
+      </div>
+    )}
+    {!toggleLock && (
+      <div className="total-amount" id="total">
+        <Totals tots={total} transaction={transaction} budget={boxvalue} />
+      </div>
+    )}
+    {!toggleLock && (
+      <div className="auto-container">
+        <button onClick={showAuto}>Auto Transactions</button>
+        {toggleAuto && (
+          <div className="autoTransaction">
+            <div className="new-savings">
+              <FontAwesomeIcon
+                icon={faSquarePlus}
+                className="newbutton"
+                onClick={newAuto}
               />
-            ))}
-          </div>
-        </div>
-      )}
-      {!toggleLock && (
-        <div className="savings-container">
-          <div className="new-savings">
-            <FontAwesomeIcon
-              icon={faSquarePlus}
-              className="newbutton"
-              onClick={newSavings}
-            />
-            <h4 className="faTitle">Savings</h4>
-          </div>
-          <div className="budget-titles">
-            <p>Savings Name</p>
-            <p>Budgeted</p>
-            <p>Total</p>
-          </div>
-          <div className="savings">
-            {savings.map((value, index) => (
-              <Savings
+              <h4 className="faTitle">Auto Transactions</h4>
+            </div>
+            {autoTrans.map((value, index) => (
+              <AutoRow
                 data={value}
                 index={index}
-                handleDelete={handleDelete}
-                savingsCallback={(x, y, z) => handleInput(x, y, z)}
-                savingsname={(x, y, z) => handleSavingsName(x, y, z)}
-                sav={savings}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-      {!toggleLock && (
-        <div className="transaction-container">
-          <div className="new-savings">
-            <FontAwesomeIcon
-              icon={faSquarePlus}
-              className="newbutton"
-              onClick={newRow}
-            />
-            <h4 className="faTitle">Transactions</h4>
-          </div>
-          <div className="transaction-titles">
-            <p>Memo</p>
-            <p>Category</p>
-            <p>Expense</p>
-            <p>Income</p>
-          </div>
-          <div className="transactions">
-            {transaction.map((event, index) => (
-              <Row
-                index={index}
-                data={event}
-                tran={transaction}
+                autotransData={autoTrans}
                 boxvalue={boxvalue}
                 handleCatOption={handleCatOption}
+                saveAuto={(x, y, z) => saveAuto(x, y, z)}
                 inputCallback={(x, y, z) => handleInput(x, y, z)}
                 nameCallback={(x, y, z) => transName(x, y, z)}
                 handleDate={(x, y, z) => handleDate(x, y, z)}
                 handleDelete={handleDelete}
-                key={index}
+                handleSave={(x, y, z) => handleSave(x, y, z)}
               />
             ))}
           </div>
+        )}
+      </div>
+    )}
+    {!toggleLock && (
+      <div className="budget-container">
+        <div className="newcat">
+          <NewBox title="New Category" handleClick={handleNewCat} />
         </div>
-      )}
-    </div>
-  );
+        <div className="budget-titles">
+          <p>Category</p>
+          <p>Budgeted</p>
+          <p>Remaining</p>
+        </div>
+        <div className="budget">
+          {boxvalue.map((value, index) => (
+            <Budget
+              value={value}
+              index={index}
+              handleDelete={handleDelete}
+              handleCatName={(x, y, z) => handleCatName(x, y, z)}
+              handleInput={(x, y, z) => handleInput(x, y, z)}
+              box={boxvalue}
+            />
+          ))}
+        </div>
+      </div>
+    )}
+    {!toggleLock && (
+      <div className="savings-container">
+        <div className="new-savings">
+          <FontAwesomeIcon
+            icon={faSquarePlus}
+            className="newbutton"
+            onClick={newSavings}
+          />
+          <h4 className="faTitle">Savings</h4>
+        </div>
+        <div className="budget-titles">
+          <p>Savings Name</p>
+          <p>Budgeted</p>
+          <p>Total</p>
+        </div>
+        <div className="savings">
+          {savings.map((value, index) => (
+            <Savings
+              data={value}
+              index={index}
+              handleDelete={handleDelete}
+              savingsCallback={(x, y, z) => handleInput(x, y, z)}
+              savingsname={(x, y, z) => handleSavingsName(x, y, z)}
+              sav={savings}
+            />
+          ))}
+        </div>
+      </div>
+    )}
+    {!toggleLock && (
+      <div className="transaction-container">
+        <div className="new-savings">
+          <FontAwesomeIcon
+            icon={faSquarePlus}
+            className="newbutton"
+            onClick={newRow}
+          />
+          <h4 className="faTitle">Transactions</h4>
+        </div>
+        <div className="transaction-titles">
+          <p className="titlebutton" onClick={()=>{sort()}}>Date</p>
+          <p>Memo</p>
+          <p>Category</p>
+          <p>Expense</p>
+          <p>Income</p>
+        </div>
+        <div className="transactions">
+          {transaction.map((event, index) => (
+            <Row
+              index={index}
+              data={event}
+              tran={transaction}
+              boxvalue={boxvalue}
+              handleCatOption={handleCatOption}
+              inputCallback={(x, y, z) => handleInput(x, y, z)}
+              nameCallback={(x, y, z) => transName(x, y, z)}
+              handleDate={(x, y, z) => handleDate(x, y, z)}
+              handleDelete={handleDelete}
+              key={index}
+            />
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+);
 }

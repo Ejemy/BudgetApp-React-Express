@@ -114,7 +114,10 @@ body{
 }
 
 .transaction-titles{
-  grid-template-columns: 2fr 1.2fr 1fr 1fr;
+  grid-template-columns: .2fr 1fr 1fr 1fr 1fr .1fr;
+}
+.titlebutton {
+  background-color: darkgrey;
 }
 
 .categoryamount {
