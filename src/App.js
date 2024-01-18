@@ -37,6 +37,7 @@ function AmountBox({ Numvalue, Spent }) {
     setNumval(Numvalue);
   }, [Numvalue]);
   */
+
   return (
     <div className="amount-children" id="amountbox">
       ¥{(Numvalue - Spent).toLocaleString()}
@@ -298,9 +299,12 @@ function AutoRow({
   );
 }
 
-function Totals({ tots, transaction }) {
+function Totals({ tots, transaction, budget }) {
+  //tots is the total of budgeted amount and savings but not remaining!
   let expense = 0;
   let income = 0;
+  let totalRemaining = 0;
+  let total = 0;
   for (let i in transaction) {
     if (transaction[i][4] > 0) {
       expense -= transaction[i][4];
@@ -309,6 +313,16 @@ function Totals({ tots, transaction }) {
       income += transaction[i][5];
     }
   }
+  for (let x in budget){
+    const remaining = budget[x][2] - budget[x][3];
+    if(remaining <= budget[x][2]){
+      total += budget[x][2]
+    } else {
+      totalRemaining += remaining
+    }
+    
+  }
+
   const actual = income + expense;
   let actualcolor = "green";
   if (actual < 0) {
@@ -317,11 +331,12 @@ function Totals({ tots, transaction }) {
     actualcolor = "green";
   }
 
+
   return (
     <div className="totals-container">
       <div className="budgeted">Budgeted: ¥{tots.toLocaleString()}</div>
       <div className="budgeted" style={{ color: actualcolor }}>
-        <p>Left to budget:</p> ¥{(income - tots).toLocaleString()}
+        <p>Left to budget:</p> ¥{(income - (totalRemaining + total)).toLocaleString()}
       </div>
       <div className="actual" style={{ color: actualcolor }}>
         <p>Actual:</p> ¥{actual.toLocaleString()}{" "}
@@ -393,11 +408,13 @@ function Delete({
 export default function App() {
   const date = new Date();
 
-  //boxvlue = [id, category, budgetamount, spent]
+  //boxvlue = [id, category, budgetamount, spent, date]
   const [boxvalue, setBoxvalue] = useState(
     Array(1).fill(["abc123", "", 0, 0, date])
   );
-  const [total, setTotal] = useState(0); //budgeted total i think
+
+  //budgeted total i think
+  const [total, setTotal] = useState(0); 
 
   //transaction = [id, name, date, category, expense, income]
   const [transaction, setTransaction] = useState(
@@ -1261,7 +1278,7 @@ export default function App() {
       )}
       {!toggleLock && (
         <div className="total-amount" id="total">
-          <Totals tots={total} transaction={transaction} />
+          <Totals tots={total} transaction={transaction} budget={boxvalue} />
         </div>
       )}
       {!toggleLock && (
