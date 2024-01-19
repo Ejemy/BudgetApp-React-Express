@@ -30,14 +30,7 @@ function CategoryName({ categname, idval, val, id }) {
 }
 
 function AmountBox({ Numvalue, Spent }) {
-  //const [numval, setNumval] = useState(Numvalue);
-
-  /*
-  useEffect(() => {
-    setNumval(Numvalue);
-  }, [Numvalue]);
-  */
-
+  //Numval is the budgeted value and spent is spent in that category
   return (
     <div className="amount-children" id="amountbox">
       ¥{(Numvalue - Spent).toLocaleString()}
@@ -315,7 +308,7 @@ function Totals({ tots, transaction, budget }) {
   }
   for (let x in budget) {
     const remaining = budget[x][2] - budget[x][3];
-    if (remaining <= budget[x][2]) {
+    if (remaining <= budget[x][2] && remaining >= 0) {
       total += budget[x][2]
     } else {
       totalRemaining += remaining
@@ -325,18 +318,27 @@ function Totals({ tots, transaction, budget }) {
 
   const actual = income + expense;
   let actualcolor = "green";
+  const calculatedRemaining = income - (totalRemaining + total)
+  let remainingcolor = "green";
   if (actual < 0) {
     actualcolor = "red";
   } else {
     actualcolor = "green";
+  }
+  if(calculatedRemaining <= 0){
+    remainingcolor = "red"
+  } else if(calculatedRemaining > 0 && calculatedRemaining < 500){
+    remainingcolor = "yellow"
+  } else {
+    remainingcolor = "green"
   }
 
 
   return (
     <div className="totals-container">
       <div className="budgeted">Budgeted: ¥{tots.toLocaleString()}</div>
-      <div className="budgeted" style={{ color: actualcolor }}>
-        <p>Left to budget:</p> ¥{(income - (totalRemaining + total)).toLocaleString()}
+      <div className="budgeted" style={{ color: remainingcolor }}>
+        <p>Left to budget:</p> ¥{calculatedRemaining.toLocaleString()}
       </div>
       <div className="actual" style={{ color: actualcolor }}>
         <p>Actual:</p> ¥{actual.toLocaleString()}{" "}
