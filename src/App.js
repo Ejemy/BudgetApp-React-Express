@@ -717,18 +717,18 @@ export default function App() {
 
     const differentMonths1 = tmonth === month - 1;
     const differentMonths2 = tmonth === month + 1;
-    const different = differentMonths1 || differentMonths2;
+    const different = differentMonths1 || differentMonths2; //if one is t is 2/13 and today is 3/20
     const tover20 = tday >= 20;
     const todayover20 = day >= 20;
-    const overAndUnder20 = tover20 || todayover20;
+    const todayAhead = tover20 && differentMonths1 && !todayover20;
+   
+    const criteria2 = todayAhead;
 
-    const criteria2 = different && overAndUnder20;
-
-    const oneIsDec = tmonth === 11 || month === 11;
-    const oneIsJan = tmonth === 0 || month === 0;
+    const oneIsDec = tmonth === 11;
+    const oneIsJan = month === 0;
     const decAndJan = oneIsDec && oneIsJan;
 
-    const criteria3 = decAndJan && overAndUnder20;
+    const criteria3 = decAndJan && tover20 && !todayover20;
 
     const payperiod = criteria1 || criteria2 || criteria3;
     console.log(theTrans, " within payperiod? ", payperiod)
