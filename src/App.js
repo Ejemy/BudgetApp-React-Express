@@ -310,8 +310,11 @@ function Totals({ tots, transaction, budget }) {
     const remaining = budget[x][2] - budget[x][3];
     if (remaining <= budget[x][2] && remaining >= 0) {
       total += budget[x][2]
-    } else {
+    } else if(remaining > budget[x][2]) {
       totalRemaining += remaining
+    } else if(remaining < 0){
+      total += budget[x][2];
+      totalRemaining -= remaining;
     }
 
   }
