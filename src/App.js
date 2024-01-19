@@ -731,7 +731,7 @@ export default function App() {
     const criteria3 = decAndJan && overAndUnder20;
 
     const payperiod = criteria1 || criteria2 || criteria3;
-    console.log("within payperiod? ", payperiod)
+    console.log(theTrans, " within payperiod? ", payperiod)
     return payperiod;
   }
 
