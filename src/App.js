@@ -34,7 +34,8 @@ function AmountBox({ Numvalue, Spent, trans }) {
   //this is for remaining amount in budget category
   // I need to make it so that all income is kept no matter when it happened.
   let realSpent = 0;
-  for(let x in trans){
+  console.log(trans)
+  for(let x = 0; x <= trans.length; x++){
     if(trans[x][0] === Numvalue[0]){
       console.log(trans[x])
       if(trans[x][4] > 0){
