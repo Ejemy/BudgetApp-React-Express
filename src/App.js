@@ -317,11 +317,15 @@ function Totals({ tots, transaction, budget }) {
   let totalRemaining = 0;
   let total = 0;
   for (let i in transaction) {
+    const isIncome = transaction[i][3] === "income" || transaction[i][3] === "";
+
     if (transaction[i][4] > 0) {
       expense -= transaction[i][4];
     }
-    if (transaction[i][5] > 0) {
+    if (isIncome && transaction[i][5] > 0) {
       income += transaction[i][5];
+    } else if(!isIncome && transaction[i][5] > 0){
+      totalRemaining += transaction[i][5];
     }
   }
   for (let x in budget) {
