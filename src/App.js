@@ -29,11 +29,25 @@ function CategoryName({ categname, idval, val, id }) {
   );
 }
 
-function AmountBox({ Numvalue, Spent }) {
+function AmountBox({ Numvalue, Spent, trans }) {
   //Numval is the budgeted value and spent is spent in that category
+  //this is for remaining amount in budget category
+  // I need to make it so that all income is kept no matter when it happened.
+  const realSpent = 0;
+  for(let x in trans){
+    if(trans[x][0] === Numvalue[0]){
+      if(trans[x][4] > 0){
+        realSpent += trans[x][4]
+      } else if(trans[x][5] > 0){
+        realSpent -= trans[x][5]
+      }
+    }
+  }
+
+  }
   return (
     <div className="amount-children" id="amountbox">
-      ¥{(Numvalue - Spent).toLocaleString()}
+      ¥{(Numvalue[2] - realSpent).toLocaleString()}
     </div>
   );
 }
@@ -85,6 +99,7 @@ function Budget({
   handleInput,
   handleDelete,
   box,
+  tran
 }) {
   return (
     <div className="row-budget">
@@ -112,8 +127,9 @@ function Budget({
         <AmountBox
           key={index}
           idval={index}
-          Numvalue={value[2]}
+          Numvalue={value}
           Spent={value[3]}
+          trans = {tran}
         />
       </div>
       <div className="deleteCat">
@@ -1346,6 +1362,7 @@ return (
               handleCatName={(x, y, z) => handleCatName(x, y, z)}
               handleInput={(x, y, z) => handleInput(x, y, z)}
               box={boxvalue}
+              tran = {transaction}
             />
           ))}
         </div>
