@@ -43,7 +43,7 @@ function AmountBox({ Numvalue, Spent, trans, calcP }) {
     }
     if(trans[x][3] === Numvalue[1]){
       console.log("trans and numvalue match")
-      if(trans[x][4] > 0 && calculate){
+      if(trans[x][4] > 0 && calcP(trans[x][2])){
         realSpent += trans[x][4]
       } 
       if(trans[x][5] > 0){
@@ -764,7 +764,6 @@ export default function App() {
     const criteria3 = decAndJan && tover20 && !todayover20;
 
     const payperiod = criteria1 || criteria2 || criteria3;
-    console.log(theTrans, " within payperiod? ", payperiod)
     return payperiod;
   }
 
@@ -1123,7 +1122,7 @@ export default function App() {
   }
 
   function handleSavingsName(val, index, id) {
-    console.log("handleSavingsName", index);
+    
     const tempSavings = savings.slice();
     tempSavings[index] = [
       tempSavings[index][0],
@@ -1138,7 +1137,7 @@ export default function App() {
 
   function saveAuto(event, data, index) {
     const tempAuto = autoTrans.slice();
-    console.log(event.target.value);
+    
     for (let i in tempAuto) {
       if (tempAuto[i][0] === data[0]) {
         tempAuto[i] = [
