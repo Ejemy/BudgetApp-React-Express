@@ -44,7 +44,7 @@ function AmountBox({ Numvalue, Spent, trans }) {
     }
   }
 
-  }
+  
   return (
     <div className="amount-children" id="amountbox">
       ¥{(Numvalue[2] - realSpent).toLocaleString()}
