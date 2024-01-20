@@ -38,9 +38,11 @@ function AmountBox({ Numvalue, Spent, trans, calcP }) {
   let realSpent = 0;
   for(let x in trans){
     const calculate = () => {
+      console.log("calculating for ", trans[x][2])
       calcP(trans[x][2])
     }
     if(trans[x][3] === Numvalue[1]){
+      console.log("trans and numvalue match")
       if(trans[x][4] > 0 && calculate){
         realSpent += trans[x][4]
       } else if(trans[x][5] > 0){
