@@ -29,18 +29,19 @@ function CategoryName({ categname, idval, val, id }) {
   );
 }
 
-function AmountBox({ Numvalue, Spent, trans }) {
+function AmountBox({ Numvalue, Spent, trans, calcP }) {
   //Numval is the budgeted value and spent is spent in that category
   //this is for remaining amount in budget category
   // I need to make it so that all income is kept no matter when it happened.
 
   //[4] is expense and [5] is income
   let realSpent = 0;
-  console.log(trans)
   for(let x in trans){
-    console.log(trans[x])
+    const calculate = () => {
+      calcP(trans[x][2])
+    }
     if(trans[x][3] === Numvalue[1]){
-      if(trans[x][4] > 0 && calculatePayperiod(trans[x][2])){
+      if(trans[x][4] > 0 && calculate){
         realSpent += trans[x][4]
       } else if(trans[x][5] > 0){
         realSpent -= trans[x][5]
@@ -103,7 +104,8 @@ function Budget({
   handleInput,
   handleDelete,
   box,
-  tran
+  tran,
+  calcP
 }) {
   return (
     <div className="row-budget">
@@ -134,6 +136,7 @@ function Budget({
           Numvalue={value}
           Spent={value[3]}
           trans = {tran}
+          calcP = {calcP}
         />
       </div>
       <div className="deleteCat">
@@ -1374,6 +1377,7 @@ return (
               handleInput={(x, y, z) => handleInput(x, y, z)}
               box={boxvalue}
               tran = {transaction}
+              calcP = {calculatePayperiod}
             />
           ))}
         </div>
