@@ -310,7 +310,7 @@ function AutoRow({
   );
 }
 
-function Totals({ tots, transaction, budget }) {
+function Totals({ tots, transaction, budget, saving }) {
   //tots is the total of budgeted amount and savings but not remaining!
   let expense = 0;
   let income = 0;
@@ -322,9 +322,10 @@ function Totals({ tots, transaction, budget }) {
     if (transaction[i][4] > 0) {
       expense -= transaction[i][4];
     }
-    if (isIncome && transaction[i][5] > 0) {
+    if (transaction[i][5] > 0) {
       income += transaction[i][5];
-    } else if(!isIncome && transaction[i][5] > 0){
+    }
+    if(!isIncome && transaction[i][5] > 0){
       totalRemaining += transaction[i][5];
     }
   }
@@ -338,7 +339,9 @@ function Totals({ tots, transaction, budget }) {
       total += budget[x][2];
       totalRemaining -= remaining;
     }
-
+  }
+  for (let y in saving){
+    income -= saving[y][3];
   }
 
   const actual = income + expense;
@@ -352,7 +355,7 @@ function Totals({ tots, transaction, budget }) {
   }
   if(calculatedRemaining <= 0){
     remainingcolor = "red"
-  } else if(calculatedRemaining > 0 && calculatedRemaining < 500){
+  } else if(calculatedRemaining > 0 && calculatedRemaining < 50000){
     remainingcolor = "yellow"
   } else {
     remainingcolor = "green"
@@ -1314,7 +1317,7 @@ return (
     )}
     {!toggleLock && (
       <div className="total-amount" id="total">
-        <Totals tots={total} transaction={transaction} budget={boxvalue} />
+        <Totals tots={total} transaction={transaction} budget={boxvalue} saving={savings} />
       </div>
     )}
     {!toggleLock && (
