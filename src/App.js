@@ -37,7 +37,7 @@ function AmountBox({ Numvalue, Spent, trans }) {
   console.log(trans)
   for(let x in trans){
     console.log(trans[x])
-    if(trans[x][0] === Numvalue[0]){
+    if(trans[x][3] === Numvalue[1]){
       if(trans[x][4] > 0){
         realSpent += trans[x][4]
       } else if(trans[x][5] > 0){
