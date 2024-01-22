@@ -15,10 +15,10 @@ function CategoryAmount({ parentCallback, idval, val, id }) {
   );
 }
 
-function CategoryName({ categname, idval, val, id }) {
+function CategoryName({ categname, idval, val, id, checkPersist }) {
   return (
     <div className="category">
-      <input type="checkbox" id={idval} value="savings" className="checkbox" />
+      <input type="checkbox" id={idval} value="persist" checked= {val[5]} className="checkbox" onClick={(event)=> checkPersist(event, val)} />
       <input
         placeholder="Category"
         className="category-name"
@@ -37,15 +37,13 @@ function AmountBox({ Numvalue, Spent, trans, calcP }) {
   //[4] is expense and [5] is income
   let realSpent = 0;
   for(let x in trans){
-    const calculate = () => {
-      console.log("calculating for ", trans[x][2])
-      return calcP(trans[x][2])
-    }
+    
     if(trans[x][3] === Numvalue[1]){
-      console.log("trans and numvalue match")
       if(trans[x][4] > 0 && calcP(trans[x][2])){
         realSpent += trans[x][4]
-      } 
+      } else if(trans[x][4] > 0 && Numvalue[5] === true){
+        realSpent += trans[x][4]
+      }
       if(trans[x][5] > 0){
         realSpent -= trans[x][5]
       }
@@ -108,7 +106,8 @@ function Budget({
   handleDelete,
   box,
   tran,
-  calcP
+  calcP,
+  checkPersist
 }) {
   return (
     <div className="row-budget">
@@ -120,6 +119,9 @@ function Budget({
           id={value[0]}
           categname={(eventData) => {
             handleCatName(eventData, index, value[0]);
+          }}
+          checkPersist = {(event)=> {
+            checkPersist(event, value)
           }}
         />
       </div>
@@ -448,7 +450,7 @@ export default function App() {
 
   //boxvlue = [id, category, budgetamount, spent, date]
   const [boxvalue, setBoxvalue] = useState(
-    Array(1).fill(["abc123", "", 0, 0, date])
+    Array(1).fill(["abc123", "", 0, 0, date, false])
   );
 
   //budgeted total i think
@@ -499,6 +501,7 @@ export default function App() {
               data.category[i].amount,
               0,
               todaydate,
+              data.category[i].persist
             ];
           } else {
             stuff[i] = [
@@ -507,6 +510,7 @@ export default function App() {
               data.category[i].amount,
               data.category[i].spent,
               data.category[i].bdate,
+              data.category[i].persist
             ];
           }
         }
@@ -799,6 +803,7 @@ export default function App() {
         nextBoxVal[x][2],
         spent,
         nextBoxVal[x][4],
+        nextBoxVal[x][5]
       ];
     }
     setBoxvalue(nextBoxVal);
@@ -866,6 +871,7 @@ export default function App() {
             parseFloat(boxstr),
             nextBoxVal[i][3],
             nextBoxVal[i][4],
+            nextBoxVal[i][5]
           ];
         }
       }
@@ -946,6 +952,7 @@ export default function App() {
           nextBox[i][2],
           nextBox[i][3],
           nextBox[i][4],
+          nextBox[i][5]
         ];
       }
     }
@@ -1038,7 +1045,7 @@ export default function App() {
     const ranLet = abc[Math.floor(Math.random() * abc.length)];
     const ranLet2 = abc[Math.floor(Math.random() * abc.length)];
     const idVal = ranNum + ranLet + ranNum2 + ranLet2;
-    setBoxvalue([...boxvalue, [idVal, "", 0, 0, date]]);
+    setBoxvalue([...boxvalue, [idVal, "", 0, 0, date, false]]);
   }
 
   function handleDelete(val, index, id) {
@@ -1064,6 +1071,7 @@ export default function App() {
               tempBox[x][2],
               newspentbox,
               tempBox[x][4],
+              tempBox[x][5]
             ];
           }
         }
@@ -1099,7 +1107,7 @@ export default function App() {
         tempBox.splice(i, 1);
 
         if (!tempBox[0]) {
-          tempBox[0] = ["asjkldfklasdh", "", 0, 0, date];
+          tempBox[0] = ["asjkldfklasdh", "", 0, 0, date, false];
         }
         calculateTotal(tempSavings, tempBox);
         setDeletebool([true, deleteItem]);
@@ -1275,6 +1283,17 @@ export default function App() {
     setTransaction(tt);
   }
 
+  function checkPersist(e, bval){
+    console.log(e)
+    console.log(bval)
+    const bv = boxvalue.slice();
+    for(let i in bv){
+      if(bv[i][0] === bval[0]){
+        bv[i] = [bv[i][0],bv[i][1],bv[i][2],bv[i][3],bv[i][4],!bv[i][5]]
+      }
+    }
+    setBoxvalue(bv)
+  }
 
 
 return (
@@ -1380,6 +1399,7 @@ return (
               box={boxvalue}
               tran = {transaction}
               calcP = {calculatePayperiod}
+              checkPersist = {(x,y)=> checkPersist(x,y)}
             />
           ))}
         </div>

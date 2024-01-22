@@ -18,7 +18,7 @@ app.use(express.static(path.join(__dirname, 'build')))
 
   const db = mongoose.createConnection(url, { useNewUrlParser: true, useUnifiedTopology: true })
 
-  var categorySchema = new mongoose.Schema({ _id: String, name: String, amount: Number, spent: Number, bdate: String });
+  var categorySchema = new mongoose.Schema({ _id: String, name: String, amount: Number, spent: Number, bdate: String, persist: Boolean });
   var transactionSchema = new mongoose.Schema({ _id: String, tname: String, date: Date, category: String, expense: Number, income: Number })
   var savingsSchema = new mongoose.Schema({ _id: String, sname: String, samount: Number, stotal: Number, sss: String, sdate: String })
   var autoTranSchema = new mongoose.Schema({ _id: String, adate: Date, acategory: String, aexpense: Number, aincome: Number, aaa: String })
@@ -57,13 +57,10 @@ app.use(express.static(path.join(__dirname, 'build')))
   });
 
 
-
-
-
   app.post("/update", async (req, res) => {
     try {
-      if (req.body[0][5] && req.body[0][4] != "savings" && req.body[0][5] != "aaa") {
-        console.log("updating TRANSACTIONS", req.body)
+      if (req.body[0][5] && req.body[0][4] != "savings" && req.body[0][5] != "aaa" && typeof req.body[0][5] === "number") {
+        console.log("updating TRANSACTIONS")
         const updateAll = await Promise.all(
           req.body.map(async (item) => {
             const update = await Transaction.findOneAndUpdate({ _id: item[0] },
@@ -75,7 +72,7 @@ app.use(express.static(path.join(__dirname, 'build')))
         return res.status(200).json({ data: updateAll })
 
       } else if (req.body[0][5] === "aaa") {
-        console.log("updating AUTO", req.body)
+        console.log("updating AUTO")
         const updateAll = await Promise.all(
           req.body.map(async (item) => {
             const update = await Autotrans.findOneAndUpdate({ _id: item[0] },
@@ -86,7 +83,7 @@ app.use(express.static(path.join(__dirname, 'build')))
         return res.status(200).json({ data: updateAll })
       }
       else if (req.body[0][4] === "savings") {
-        console.log("updating SAVINGS", req.body)
+        console.log("updating SAVINGS")
         const updateAll = await Promise.all(
           req.body.map(async (item) => {
             const update = await Savings.findOneAndUpdate({ _id: item[0] },
@@ -96,12 +93,12 @@ app.use(express.static(path.join(__dirname, 'build')))
         );
         return res.status(200).json({ data: updateAll })
       }
-      else if (req.body[0][5] === undefined) {
+      else if (typeof req.body[0][5] === "boolean") {
         console.log("UPDATING BUDGET", req.body)
         const updateAll = await Promise.all(
           req.body.map(async (item) => {
             const update = await Category.findOneAndUpdate({ _id: item[0] },
-              { name: item[1], amount: item[2], spent: item[3], bdate: item[4] }, { new: true, upsert: true })
+              { name: item[1], amount: item[2], spent: item[3], bdate: item[4], persist: item[5] }, { new: true, upsert: true })
             return update;
           })
         );
@@ -123,7 +120,7 @@ app.use(express.static(path.join(__dirname, 'build')))
   app.post("/delete", async (req, res) => {
     try {
 
-      if (!req.body[0].includes("aaa") && !req.body[0].includes("savings")) {
+      if (!req.body[0].includes("aaa") && !req.body[0].includes("savings") && typeof req.body[0][5] === "number") {
         const deletion = await Transaction.findOneAndDelete({ _id: req.body[0][0] })
         console.log("Deleting: ", req.body)
         return res.status(200).json({ data: deletion })
