@@ -320,12 +320,13 @@ function AutoRow({
   );
 }
 
-function Totals({ tots, transaction, budget, saving }) {
+function Totals({ tots, transaction, budget, saving, payperiod}) {
   //tots is the total of budgeted amount and savings but not remaining!
   let expense = 0;
   let income = 0;
-  let totalRemaining = 0;
+  let totalRemaining = 0; //
   let total = 0;
+  let nonspecificIncome = 0;
   for (let i in transaction) {
     const isIncome = transaction[i][3] === "income" || transaction[i][3] === "";
 
@@ -334,13 +335,16 @@ function Totals({ tots, transaction, budget, saving }) {
     }
     if (transaction[i][5] > 0) {
       income += transaction[i][5];
+      //console.log("INCOME: ", transaction[i][5], "var income now is : ", income)
     }
-    if(!isIncome && transaction[i][5] > 0){
-      totalRemaining += transaction[i][5];
+    console.log("pp", payperiod(transaction[i][2]))
+    if(isIncome && transaction[i][5] > 0 && payperiod(transaction[i][2])){
+      //totalRemaining += transaction[i][5];
+      nonspecificIncome += transaction[i][5];
     }
   }
   for (let x in budget) {
-    const remaining = budget[x][2] - budget[x][3];
+    const remaining = budget[x][2] - budget[x][3]; //  ## gift ## 500 ## -10 === 510
     if (remaining <= budget[x][2] && remaining >= 0) {
       total += budget[x][2]
     } else if(remaining > budget[x][2]) {
@@ -351,12 +355,15 @@ function Totals({ tots, transaction, budget, saving }) {
     }
   }
   for (let y in saving){
-    income -= saving[y][3];
+    expense -= saving[y][3];
+    expense -= saving[y][2]
+    
   }
 
   const actual = income + expense;
   let actualcolor = "green";
-  const calculatedRemaining = income - (totalRemaining + total)
+  const calculatedRemaining = nonspecificIncome - tots//income - (totalRemaining + total)
+  console.log("LEFT TO BUDGET: ", income, "-", "(", totalRemaining, "+", total, ") = ", calculatedRemaining)
   let remainingcolor = "green";
   if (actual < 0) {
     actualcolor = "red";
@@ -1343,7 +1350,12 @@ return (
     )}
     {!toggleLock && (
       <div className="total-amount" id="total">
-        <Totals tots={total} transaction={transaction} budget={boxvalue} saving={savings} />
+        <Totals 
+          tots={total} 
+          transaction={transaction} 
+          budget={boxvalue} 
+          saving={savings} 
+          payperiod={(x)=> calculatePayperiod(x)} />
       </div>
     )}
     {!toggleLock && (
