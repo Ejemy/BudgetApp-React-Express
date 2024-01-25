@@ -30,11 +30,7 @@ function CategoryName({ categname, idval, val, id, checkPersist }) {
 }
 
 function AmountBox({ Numvalue, Spent, trans, calcP }) {
-  //Numval is the budgeted value and spent is spent in that category
-  //this is for remaining amount in budget category
-  // I need to make it so that all income is kept no matter when it happened.
-
-  //[4] is expense and [5] is income
+  const colorr = "black";
   let realSpent = 0;
   for(let x in trans){
     
@@ -50,10 +46,19 @@ function AmountBox({ Numvalue, Spent, trans, calcP }) {
     }
   }
 
+  const left = Numvalue[2] - realSpent
+  const quarter = Numvalue[2] / 3;
+  if(left < quarter){
+    colorr = "yellow"
+  } else if(left <= 0){
+    colorr = "red"
+  } else {
+    colorr = "black"
+  }
   
   return (
-    <div className="amount-children" id="amountbox">
-      ¥{(Numvalue[2] - realSpent).toLocaleString()}
+    <div className="amount-children" id="amountbox" style={{color: colorr}}>
+      ¥{left.toLocaleString()}
     </div>
   );
 }
@@ -345,14 +350,9 @@ function Totals({ tots, transaction, budget, saving, payperiod}) {
   }
   for (let x in budget) {
     const remaining = budget[x][2] - budget[x][3]; //  ## gift ## 500 ## -10 === 510
-    if (remaining <= budget[x][2] && remaining >= 0) {
-      total += budget[x][2]
-    } else if(remaining > budget[x][2]) {
-      totalRemaining += remaining
-    } else if(remaining < 0){
-      total += budget[x][2];
-      totalRemaining -= remaining;
-    }
+    if (remaining < 0) {
+      tots -= remaining
+    } 
   }
   for (let y in saving){
     expense -= saving[y][3];
