@@ -48,9 +48,7 @@ function AmountBox({ Numvalue, Spent, trans, calcP }) {
 
   const left = Numvalue[2] - realSpent
   const quarter = Numvalue[2] / 3;
-  if(left < quarter){
-    colorr = "yellow"
-  } else if(left <= 0){
+   if(left <= 0){
     colorr = "red"
   } else {
     colorr = "black"
