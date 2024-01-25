@@ -30,7 +30,7 @@ function CategoryName({ categname, idval, val, id, checkPersist }) {
 }
 
 function AmountBox({ Numvalue, Spent, trans, calcP }) {
-  const colorr = "black";
+  let colorr = "black";
   let realSpent = 0;
   for(let x in trans){
     
