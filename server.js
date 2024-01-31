@@ -3,7 +3,7 @@ require("dotenv").config({ path: "./.gitignore/.env" });
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const path = require("path")
-const url = "mongodb+srv://codyclackclack:bMY9DRGmLII50Cie@cluster0.tb1gxvb.mongodb.net/?retryWrites=true&w=majority" //process.env.MONGO_URI;
+const url = process.env.MONGO_URI;
 
 
 const app = express();
@@ -30,7 +30,7 @@ app.use(express.static(path.join(__dirname, 'build')))
 
   app.post("/login", (req, res) => {
     console.log(req.body)
-    if (req.body.passcode === ""){ //process.env.PASS_KEY) {
+    if (req.body.passcode === process.env.PASS_KEY) {
       res.json({ success: true })
     }
   })
