@@ -72,7 +72,7 @@ app.use(express.static(path.join(__dirname, 'build')))
         return res.status(200).json({ data: updateAll })
 
       } else if (req.body[0][5] === "aaa") {
-        console.log("updating AUTO")
+        console.log("updating AUTO", req.body)
         const updateAll = await Promise.all(
           req.body.map(async (item) => {
             const update = await Autotrans.findOneAndUpdate({ _id: item[0] },

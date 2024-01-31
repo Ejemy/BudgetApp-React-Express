@@ -3,6 +3,7 @@ import "./styles.css";
 import { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSquarePlus } from "@fortawesome/free-solid-svg-icons";
+
 function CategoryAmount({ parentCallback, idval, val, id }) {
   return (
     <input
@@ -48,7 +49,7 @@ function AmountBox({ Numvalue, Spent, trans, calcP }) {
 
   const left = Numvalue[2] - realSpent
   const quarter = Numvalue[2] / 3;
-   if(left <= 0){
+   if(left < 0){
     colorr = "red"
   } else {
     colorr = "black"
@@ -576,7 +577,7 @@ export default function App() {
             const payperiod = calculatePayperiod(data.transaction[i].date)
             if (
               data.auto[a].acategory === data.transaction[i].category &&
-              payperiod
+              payperiod && data.auto[a].aexpense === data.transaction[i].expense
             ) {
               checky = false;
               break;
@@ -587,7 +588,7 @@ export default function App() {
             }
           }
           if (checky) {
-            console.log("START");
+            console.log("PUSHING an AUTO");
             transstuff.push(addNewAuto(data.auto[a]));
           }
         }
@@ -1148,6 +1149,8 @@ export default function App() {
     setSavings(tempSavings);
   }
 
+
+  //this saves date ONCHANGE for auto
   function saveAuto(event, data, index) {
     const tempAuto = autoTrans.slice();
     
@@ -1167,6 +1170,7 @@ export default function App() {
     setAutotrans(tempAuto);
   }
 
+  //this is used for when the auto needs to be added to transactions from auto trans when I /load or click save
   function addNewAuto(data) {
     const abc = "abcdefghijklmnopqrstuvwxyz!#$%";
     const ranNum = Math.floor(Math.random() * 100);
@@ -1178,13 +1182,13 @@ export default function App() {
     let ddd = new Date(data.adate);
     const ddate = ddd.toString(); // Fri Dec 22 2022
     const day = ddate.slice(8, 10) //Fri Dec 2 2220
-
+    console.log(day)
     const today = new Date();
     const totoday = today.toString();
     const monthday = totoday.slice(0, 7)
     const year = totoday.slice(10, 15)
     ddd = monthday + " " + day + " " + year;
-    const newdate = new Date(ddd);
+    const newdate = new Date(ddd); //this is a current month and year but DAY from the data
 
     const newArr = [
       newId,
@@ -1227,7 +1231,7 @@ export default function App() {
     for (let i in tempTrans) {
       const payday = calculatePayperiod(tempTrans[i][2]);
 
-      if (payday && tempTrans[i][3] === data[2]) {
+      if (payday && tempTrans[i][3] === data[2] && tempTrans[i][4] === data[3]) {
         checky = false;
         console.log("checky false now");
         break;
