@@ -1,12 +1,12 @@
 .App{
   display: grid;
   grid-template-areas:
-      "title title title"
-      "bar bar bar"
+      "bar title title"
       "tot tot tot"
-      "auto trans trans"
-      "budg trans trans"
-      "save trans trans";
+      "tab tab tab"
+      "thing thing thing"
+      "thing thing thing"
+      "thing thing thing";
   grid-template-rows: 1fr 1fr 1fr 0fr 20fr 10fr;
   grid-template-columns: 2fr 2fr 2fr;
   height: 100vh;
@@ -29,21 +29,26 @@ body{
   margin:auto;
 }
 
-.budget-container, .savings-container  {
+.budget-container, .savings-container, .auto-container  {
   display: flex;
   flex-direction:column;
+
 }
 
 .transaction-container{
-  grid-area: trans;
+  grid-area: thing;
 
 }
-.budget-container, .savings-container, .transaction-container {
-  border: 3px black solid;
-  background-color:white;
-  padding: 0.3em;
-  overflow-y:scroll;
-  box-shadow: 3px 1px 3px 0px black;
+.budget-container, .savings-container, .transaction-container, .auto-container {
+  background-color: #fff;
+  border: 3px solid #000;
+  overflow-y: scroll;
+  padding: 0.5em;
+  width: 95%;
+  height: 95%;
+  margin: auto;
+  border-radius: 5px;
+  transition-duration: 1000ms;
 }
 
 
@@ -185,16 +190,15 @@ body{
 }
 
 .auto-transaction{
-  grid-area: auto;
   display:flex;
+  justify-content: center;
 }
 
-.budget-container{
-  grid-area:budg;
+.budget-container, .savings-container, .auto-container{
+  grid-area:thing;
+  width:60%;
 }
-.savings-container{
-  grid-area: save
-}
+
 .totals-container {
   display: flex;
   background-color: lightgrey;
@@ -219,17 +223,7 @@ body{
 }
 
 
-.auto-container{
-  grid-area:auto;
-}
 
-.autoTransaction{
-  border: black solid 3px;
-  background-color: lightgoldenrodyellow;
-  padding: 1em;
-  overflow-y:scroll;
-  
-}
 
 
 .budgeted, .actual{
@@ -301,6 +295,36 @@ body{
     font-size: 2em;
 }
 
+.taskbar {
+  grid-area: bar;
+  display:flex;
+  
+}
+
+.paydayPopup{
+  border: 3px black solid;
+  box-shadow:3px 3px 3px;
+  position: absolute;
+  left: 30%;
+  top: 30%;
+  background-color: white;
+  width: 30%;
+  height: 10%;
+  text-align: center;
+  padding: 2em;
+  margin: auto;
+}
+
+.tab-container {
+  grid-area: tab;
+}
+
+.tab-container ul, .taskbar ul {
+  list-style-type: none;
+  display: flex;
+  padding: 0;
+  margin: auto;
+}
 
 
 @media only screen and (max-width: 600px) {
@@ -340,24 +364,5 @@ body{
   width: 2em;
 }
 
-}
-
-.taskbar {
-  grid-area: bar;
-  display:flex;
-}
-
-.paydayPopup{
-  border: 3px black solid;
-  box-shadow:3px 3px 3px;
-  position: absolute;
-  left: 30%;
-  top: 30%;
-  background-color: white;
-  width: 30%;
-  height: 10%;
-  text-align: center;
-  padding: 2em;
-  margin: auto;
 }
 

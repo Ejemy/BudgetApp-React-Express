@@ -343,7 +343,6 @@ function Totals({ tots, transaction, budget, saving, payperiod, settings }) {
       income += transaction[i][5];
       //console.log("INCOME: ", transaction[i][5], "var income now is : ", income)
     }
-    console.log("pp", settings[0])
     if (isIncome && transaction[i][5] > 0 && payperiod(transaction[i][2], settings[0].payday)) {
       //totalRemaining += transaction[i][5];
       nonspecificIncome += transaction[i][5];
@@ -364,7 +363,6 @@ function Totals({ tots, transaction, budget, saving, payperiod, settings }) {
   const actual = income + expense;
   let actualcolor = "green";
   const calculatedRemaining = nonspecificIncome - tots//income - (totalRemaining + total)
-  console.log("LEFT TO BUDGET: ", income, "-", "(", totalRemaining, "+", total, ") = ", calculatedRemaining)
   let remainingcolor = "green";
   if (actual < 0) {
     actualcolor = "red";
@@ -487,7 +485,7 @@ export default function App() {
   const [settings, setSettings] = useState([{ payday: 20 }]);
 
 
-  const [toggleAuto, setToggleAuto] = useState(false);
+  const [toggleDiv, setToggleDiv] = useState({auto: false, transaction: false, budget: true, savings: false});
   const [toggleLock, setToggleLock] = useState(true);
   const [passcode, setPasscode] = useState("");
 
@@ -1283,8 +1281,9 @@ export default function App() {
     }
   }
 
-  function showAuto() {
-    setToggleAuto(!toggleAuto);
+  function showDiv(x) {
+    const tab = x;
+    setToggleDiv({[x]: !toggleDiv[tab]});
   }
 
   const handlelogSubmit = async (event) => {
@@ -1357,9 +1356,10 @@ export default function App() {
               }
             }
             }
-            >Set your payday</button>
+            >Payday</button>
             </li>
-            <li>Language</li>
+            <li><button>Language</button></li>
+            <li><button>Logout</button></li>
           </ul>
         </div>
       )
@@ -1391,6 +1391,7 @@ export default function App() {
           </form>
         </div>
       )}
+
       {!toggleLock && (
         <div className="title-container">
           <h1 className="dateTitle">
@@ -1430,9 +1431,19 @@ export default function App() {
         </div>
       )}
       {!toggleLock && (
+        <div className="tab-container">
+          <ul>
+            <li><button onClick={() => {showDiv("transaction")}}>Transactions</button></li>
+            <li><button onClick={() => {showDiv("budget")}}>Budget</button></li>
+            <li><button onClick={() => {showDiv("savings")}}>Savings</button></li>
+            <li><button onClick={() => {showDiv("auto")}}>Automatic</button></li>
+          </ul>
+        </div>
+      )}
+      {!toggleLock && (
+        
         <div className="auto-container">
-          <button onClick={showAuto}>Auto Transactions</button>
-          {toggleAuto && (
+          {toggleDiv.auto && (
             <div className="autoTransaction">
               <div className="new-savings">
                 <FontAwesomeIcon
@@ -1461,7 +1472,7 @@ export default function App() {
           )}
         </div>
       )}
-      {!toggleLock && (
+      {!toggleLock && toggleDiv.budget && (
         <div className="budget-container">
           <div className="newcat">
             <NewBox title="New Category" handleClick={handleNewCat} />
@@ -1489,7 +1500,7 @@ export default function App() {
           </div>
         </div>
       )}
-      {!toggleLock && (
+      {!toggleLock && toggleDiv.savings && (
         <div className="savings-container">
           <div className="new-savings">
             <FontAwesomeIcon
@@ -1518,7 +1529,7 @@ export default function App() {
           </div>
         </div>
       )}
-      {!toggleLock && (
+      {!toggleLock && toggleDiv.transaction && (
         <div className="transaction-container">
           <div className="new-savings">
             <FontAwesomeIcon
