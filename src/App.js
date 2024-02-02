@@ -484,7 +484,7 @@ export default function App() {
   );
 
   //settings = {payday: 20}
-  const [settings, setSettings] = useState({ payday: 20 });
+  const [settings, setSettings] = useState([{ payday: 20 }]);
 
 
   const [toggleAuto, setToggleAuto] = useState(false);
@@ -501,12 +501,21 @@ export default function App() {
         let transstuff = transaction.slice();
         let sav = savings.slice();
         let aut = autoTrans.slice();
-        
+        let pday;
+        let settingsp;
+        if(!data.settings.payday){
+          pday = 20;
+          settingsp = {payday: 20}
+        } else{
+          pday = data.settings.payday
+          setSettings(data.settings)
+
+        }
         const todaydate = new Date();
 
         for (let i in data.category) {
           const bdate = new Date(data.category[i].bdate);
-          const payday = calculatePayperiod(bdate, data.settings.payday);
+          const payday = calculatePayperiod(bdate, pday);
           if (payday) {
             stuff[i] = [
               data.category[i]._id,
@@ -544,7 +553,7 @@ export default function App() {
         for (let s in data.savings) {
           const dbdate = new Date(data.savings[s].sdate);
           //my payday is the 20th
-          const payday = calculatePayperiod(dbdate, data.settings.payday);
+          const payday = calculatePayperiod(dbdate, pday);
           if (payday) {
             sav[s] = [
               data.savings[s]._id,
@@ -581,7 +590,7 @@ export default function App() {
 
           //my payday is the 20th
           for (let i in data.transaction) {
-            const payperiod = calculatePayperiod(data.transaction[i].date, data.settings.payday)
+            const payperiod = calculatePayperiod(data.transaction[i].date, pday)
             if (
               data.auto[a].acategory === data.transaction[i].category &&
               payperiod && data.auto[a].aexpense === data.transaction[i].expense
@@ -601,11 +610,7 @@ export default function App() {
         }
         //sorting the state like this breaks the program. Get 503 errors for updates to transactions.
         //transstuff.sort((a,b)=>{return new Date(a[2]) - new Date(b[2])});
-        if(!data.settings.payday){
-          const pd = {payday: 20};
-          setSettings([pd])
-        }
-        setSettings(data.settings)
+        setSettings([settingsp])
         setTransaction(transstuff);
         setSavings(sav);
         setAutotrans(aut);
