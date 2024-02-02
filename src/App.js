@@ -601,7 +601,10 @@ export default function App() {
         }
         //sorting the state like this breaks the program. Get 503 errors for updates to transactions.
         //transstuff.sort((a,b)=>{return new Date(a[2]) - new Date(b[2])});
-
+        if(!data.settings.payday){
+          const pd = {payday: 20};
+          setSettings([pd])
+        }
         setSettings(data.settings)
         setTransaction(transstuff);
         setSavings(sav);
