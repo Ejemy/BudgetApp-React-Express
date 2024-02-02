@@ -19,7 +19,7 @@ function CategoryAmount({ parentCallback, idval, val, id }) {
 function CategoryName({ categname, idval, val, id, checkPersist }) {
   return (
     <div className="category">
-      <input type="checkbox" id={idval} value="persist" checked= {val[5]} className="checkbox" onClick={(event)=> checkPersist(event, val)} />
+      <input type="checkbox" id={idval} value="persist" checked={val[5]} className="checkbox" onClick={(event) => checkPersist(event, val)} />
       <input
         placeholder="Category"
         className="category-name"
@@ -30,18 +30,18 @@ function CategoryName({ categname, idval, val, id, checkPersist }) {
   );
 }
 
-function AmountBox({ Numvalue, Spent, trans, calcP }) {
+function AmountBox({ Numvalue, Spent, trans, calcP, pd }) {
   let colorr = "black";
   let realSpent = 0;
-  for(let x in trans){
-    
-    if(trans[x][3] === Numvalue[1]){
-      if(trans[x][4] > 0 && calcP(trans[x][2])){
+  for (let x in trans) {
+
+    if (trans[x][3] === Numvalue[1]) {
+      if (trans[x][4] > 0 && calcP(trans[x][2], pd[0].payday)) {
         realSpent += trans[x][4]
-      } else if(trans[x][4] > 0 && Numvalue[5] === true){
+      } else if (trans[x][4] > 0 && Numvalue[5] === true) {
         realSpent += trans[x][4]
       }
-      if(trans[x][5] > 0){
+      if (trans[x][5] > 0) {
         realSpent -= trans[x][5]
       }
     }
@@ -49,14 +49,14 @@ function AmountBox({ Numvalue, Spent, trans, calcP }) {
 
   const left = Numvalue[2] - realSpent
   const quarter = Numvalue[2] / 3;
-   if(left < 0){
+  if (left < 0) {
     colorr = "red"
   } else {
     colorr = "black"
   }
-  
+
   return (
-    <div className="amount-children" id="amountbox" style={{color: colorr}}>
+    <div className="amount-children" id="amountbox" style={{ color: colorr }}>
       ¥{left.toLocaleString()}
     </div>
   );
@@ -111,6 +111,7 @@ function Budget({
   box,
   tran,
   calcP,
+  settings,
   checkPersist
 }) {
   return (
@@ -124,7 +125,7 @@ function Budget({
           categname={(eventData) => {
             handleCatName(eventData, index, value[0]);
           }}
-          checkPersist = {(event)=> {
+          checkPersist={(event) => {
             checkPersist(event, value)
           }}
         />
@@ -144,8 +145,9 @@ function Budget({
           idval={index}
           Numvalue={value}
           Spent={value[3]}
-          trans = {tran}
-          calcP = {calcP}
+          trans={tran}
+          calcP={calcP}
+          pd={settings}
         />
       </div>
       <div className="deleteCat">
@@ -324,7 +326,7 @@ function AutoRow({
   );
 }
 
-function Totals({ tots, transaction, budget, saving, payperiod}) {
+function Totals({ tots, transaction, budget, saving, payperiod, settings }) {
   //tots is the total of budgeted amount and savings but not remaining!
   let expense = 0;
   let income = 0;
@@ -341,8 +343,8 @@ function Totals({ tots, transaction, budget, saving, payperiod}) {
       income += transaction[i][5];
       //console.log("INCOME: ", transaction[i][5], "var income now is : ", income)
     }
-    console.log("pp", payperiod(transaction[i][2]))
-    if(isIncome && transaction[i][5] > 0 && payperiod(transaction[i][2])){
+    console.log("pp", settings[0])
+    if (isIncome && transaction[i][5] > 0 && payperiod(transaction[i][2], settings[0].payday)) {
       //totalRemaining += transaction[i][5];
       nonspecificIncome += transaction[i][5];
     }
@@ -351,12 +353,12 @@ function Totals({ tots, transaction, budget, saving, payperiod}) {
     const remaining = budget[x][2] - budget[x][3]; //  ## gift ## 500 ## -10 === 510
     if (remaining < 0) {
       tots -= remaining
-    } 
+    }
   }
-  for (let y in saving){
+  for (let y in saving) {
     expense -= saving[y][3];
     expense -= saving[y][2]
-    
+
   }
 
   const actual = income + expense;
@@ -369,9 +371,9 @@ function Totals({ tots, transaction, budget, saving, payperiod}) {
   } else {
     actualcolor = "green";
   }
-  if(calculatedRemaining <= 0){
+  if (calculatedRemaining <= 0) {
     remainingcolor = "red"
-  } else if(calculatedRemaining > 0 && calculatedRemaining < 50000){
+  } else if (calculatedRemaining > 0 && calculatedRemaining < 50000) {
     remainingcolor = "yellow"
   } else {
     remainingcolor = "green"
@@ -481,6 +483,10 @@ export default function App() {
     Array(1).fill(["xyz123", "", "", 0, 0, "aaa"])
   );
 
+  //settings = {payday: 20}
+  const [settings, setSettings] = useState({ payday: 20 });
+
+
   const [toggleAuto, setToggleAuto] = useState(false);
   const [toggleLock, setToggleLock] = useState(true);
   const [passcode, setPasscode] = useState("");
@@ -495,11 +501,12 @@ export default function App() {
         let transstuff = transaction.slice();
         let sav = savings.slice();
         let aut = autoTrans.slice();
+        
         const todaydate = new Date();
 
         for (let i in data.category) {
           const bdate = new Date(data.category[i].bdate);
-          const payday = calculatePayperiod(bdate);
+          const payday = calculatePayperiod(bdate, data.settings.payday);
           if (payday) {
             stuff[i] = [
               data.category[i]._id,
@@ -537,7 +544,7 @@ export default function App() {
         for (let s in data.savings) {
           const dbdate = new Date(data.savings[s].sdate);
           //my payday is the 20th
-          const payday = calculatePayperiod(dbdate);
+          const payday = calculatePayperiod(dbdate, data.settings.payday);
           if (payday) {
             sav[s] = [
               data.savings[s]._id,
@@ -574,7 +581,7 @@ export default function App() {
 
           //my payday is the 20th
           for (let i in data.transaction) {
-            const payperiod = calculatePayperiod(data.transaction[i].date)
+            const payperiod = calculatePayperiod(data.transaction[i].date, data.settings.payday)
             if (
               data.auto[a].acategory === data.transaction[i].category &&
               payperiod && data.auto[a].aexpense === data.transaction[i].expense
@@ -595,6 +602,7 @@ export default function App() {
         //sorting the state like this breaks the program. Get 503 errors for updates to transactions.
         //transstuff.sort((a,b)=>{return new Date(a[2]) - new Date(b[2])});
 
+        setSettings(data.settings)
         setTransaction(transstuff);
         setSavings(sav);
         setAutotrans(aut);
@@ -718,6 +726,21 @@ export default function App() {
     }
   }, [autoTrans]);
 
+  useEffect(() => {
+    if (!firstload) {
+      console.log("settings state", settings);
+      fetch("/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(settings),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("app.js settings fetch: ", data);
+        });
+    } 
+  }, [settings]);
+
   //Ensures that the input is only a number
   function modifyNum(arr, filterArr) {
     for (let j = 0; j < arr.length; j++) {
@@ -742,7 +765,7 @@ export default function App() {
     setTotal(total);
   }
 
-  function calculatePayperiod(theTrans) {
+  function calculatePayperiod(theTrans, payd) {
     const today = new Date();
     const day = today.getDate();
     const month = today.getMonth();
@@ -752,8 +775,8 @@ export default function App() {
     const tmonth = ttoday.getMonth();
 
     const sameMonth = tmonth === month;
-    const bothOver20 = tday >= 20 && day >= 20;
-    const bothUnder20 = tday < 20 && day < 20;
+    const bothOver20 = tday >= payd && day >= payd;
+    const bothUnder20 = tday < payd && day < payd;
     const bothOverOrUnder = bothOver20 || bothUnder20;
 
     const criteria1 = sameMonth && bothOverOrUnder;
@@ -761,10 +784,10 @@ export default function App() {
     const differentMonths1 = tmonth === month - 1;
     const differentMonths2 = tmonth === month + 1;
     const different = differentMonths1 || differentMonths2; //if one is t is 2/13 and today is 3/20
-    const tover20 = tday >= 20;
-    const todayover20 = day >= 20;
+    const tover20 = tday >= payd;
+    const todayover20 = day >= payd;
     const todayAhead = tover20 && differentMonths1 && !todayover20;
-   
+
     const criteria2 = todayAhead;
 
     const oneIsDec = tmonth === 11;
@@ -784,7 +807,7 @@ export default function App() {
 
 
       for (let ii = 0; ii < nextTransaction.length; ii++) {
-        const pp = calculatePayperiod(nextTransaction[ii][2]);
+        const pp = calculatePayperiod(nextTransaction[ii][2], settings.payday);
 
 
         if (
@@ -1136,7 +1159,7 @@ export default function App() {
   }
 
   function handleSavingsName(val, index, id) {
-    
+
     const tempSavings = savings.slice();
     tempSavings[index] = [
       tempSavings[index][0],
@@ -1153,7 +1176,7 @@ export default function App() {
   //this saves date ONCHANGE for auto
   function saveAuto(event, data, index) {
     const tempAuto = autoTrans.slice();
-    
+
     for (let i in tempAuto) {
       if (tempAuto[i][0] === data[0]) {
         tempAuto[i] = [
@@ -1229,7 +1252,7 @@ export default function App() {
     //my payday is the 20th
     let checky = true;
     for (let i in tempTrans) {
-      const payday = calculatePayperiod(tempTrans[i][2]);
+      const payday = calculatePayperiod(tempTrans[i][2], settings.payday);
 
       if (payday && tempTrans[i][3] === data[2] && tempTrans[i][4] === data[3]) {
         checky = false;
@@ -1287,202 +1310,241 @@ export default function App() {
 
   function sort() {
     let t = transaction.slice();
-    const tt = t.sort((a, b) => {return new Date(a[2]) - new Date(b[2]) });
+    const tt = t.sort((a, b) => { return new Date(a[2]) - new Date(b[2]) });
     console.log("T", tt);
     setTransaction(tt);
   }
 
-  function checkPersist(e, bval){
+  function checkPersist(e, bval) {
     console.log(e)
     console.log(bval)
     const bv = boxvalue.slice();
-    for(let i in bv){
-      if(bv[i][0] === bval[0]){
-        bv[i] = [bv[i][0],bv[i][1],bv[i][2],bv[i][3],bv[i][4],!bv[i][5]]
+    for (let i in bv) {
+      if (bv[i][0] === bval[0]) {
+        bv[i] = [bv[i][0], bv[i][1], bv[i][2], bv[i][3], bv[i][4], !bv[i][5]]
       }
     }
     setBoxvalue(bv)
   }
 
+  function handlePaydaySubmit(event){
+    event.preventDefault();
+    const payDate = document.getElementById("payday-value").value;
+     if(payDate){
+    setSettings([{payday: payDate}])
+     }
+   
+    document.getElementById("settings-payday").style.display = "none";
+   
+  }
 
-return (
-  <div className="App">
-    {toggleLock && (
-      <div className="lock" id="loginDiv" onSubmit={handlelogSubmit}>
-        <form id="loginForm" action="/login" method="post">
-          <h1>PASSCODE</h1>
-          <input
-            type="password"
-            id="passcode"
-            name="passcode"
-            className="pass"
-            onChange={(e) => setPasscode(e.target.value)}
-          />{" "}
-          <br /> <br />
-          <input className="submitbutton" type="submit" value="submit" />
-        </form>
-      </div>
-    )}
-    {!toggleLock && (
-      <div className="title-container">
-        <h1 className="dateTitle">
-          {(() => {
-            const date = new Date();
-            const months = [
-              "January",
-              "February",
-              "March",
-              "April",
-              "May",
-              "June",
-              "July",
-              "August",
-              "September",
-              "October",
-              "November",
-              "December",
-            ];
-            const month = date.getMonth();
-            const year = date.getFullYear();
+  return (
+    <div className="App">
+      {!toggleLock && (
+        <div className="taskbar">
+          <ul>
+            <li><button onClick={() => {
+              if (document.getElementById("settings-payday")) {
+                document.getElementById("settings-payday").style = { display: "block" }
+              }
+            }
+            }
+            >Set your payday</button>
+            </li>
+            <li>Language</li>
+          </ul>
+        </div>
+      )
+      }
+      {!toggleLock && (
+        <div className="paydayPopup" id="settings-payday" style={{ display: "none" }}>
+          <form onSubmit={(e)=>{
+            handlePaydaySubmit(e)
+            }}>
+            <label>When is your payday?</label>
+            <input id="payday-value" value={settings.payday} />
+            <input type="submit" value="Close"/>
+          </form>
+        </div>
+      )}
+      {toggleLock && (
+        <div className="lock" id="loginDiv" onSubmit={handlelogSubmit}>
+          <form id="loginForm" action="/login" method="post">
+            <h1>PASSCODE</h1>
+            <input
+              type="password"
+              id="passcode"
+              name="passcode"
+              className="pass"
+              onChange={(e) => setPasscode(e.target.value)}
+            />{" "}
+            <br /> <br />
+            <input className="submitbutton" type="submit" value="submit" />
+          </form>
+        </div>
+      )}
+      {!toggleLock && (
+        <div className="title-container">
+          <h1 className="dateTitle">
+            {(() => {
+              const date = new Date();
+              const months = [
+                "January",
+                "February",
+                "March",
+                "April",
+                "May",
+                "June",
+                "July",
+                "August",
+                "September",
+                "October",
+                "November",
+                "December",
+              ];
+              const month = date.getMonth();
+              const year = date.getFullYear();
 
-            return "Budget of " + months[month] + " " + year;
-          })()}
-        </h1>
-      </div>
-    )}
-    {!toggleLock && (
-      <div className="total-amount" id="total">
-        <Totals 
-          tots={total} 
-          transaction={transaction} 
-          budget={boxvalue} 
-          saving={savings} 
-          payperiod={(x)=> calculatePayperiod(x)} />
-      </div>
-    )}
-    {!toggleLock && (
-      <div className="auto-container">
-        <button onClick={showAuto}>Auto Transactions</button>
-        {toggleAuto && (
-          <div className="autoTransaction">
-            <div className="new-savings">
-              <FontAwesomeIcon
-                icon={faSquarePlus}
-                className="newbutton"
-                onClick={newAuto}
-              />
-              <h4 className="faTitle">Auto Transactions</h4>
+              return "Budget of " + months[month] + " " + year;
+            })()}
+          </h1>
+        </div>
+      )}
+      {!toggleLock && (
+        <div className="total-amount" id="total">
+          <Totals
+            tots={total}
+            transaction={transaction}
+            budget={boxvalue}
+            saving={savings}
+            settings = {settings}
+            payperiod={(x,y) => calculatePayperiod(x, y)} />
+        </div>
+      )}
+      {!toggleLock && (
+        <div className="auto-container">
+          <button onClick={showAuto}>Auto Transactions</button>
+          {toggleAuto && (
+            <div className="autoTransaction">
+              <div className="new-savings">
+                <FontAwesomeIcon
+                  icon={faSquarePlus}
+                  className="newbutton"
+                  onClick={newAuto}
+                />
+                <h4 className="faTitle">Auto Transactions</h4>
+              </div>
+              {autoTrans.map((value, index) => (
+                <AutoRow
+                  data={value}
+                  index={index}
+                  autotransData={autoTrans}
+                  boxvalue={boxvalue}
+                  handleCatOption={handleCatOption}
+                  saveAuto={(x, y, z) => saveAuto(x, y, z)}
+                  inputCallback={(x, y, z) => handleInput(x, y, z)}
+                  nameCallback={(x, y, z) => transName(x, y, z)}
+                  handleDate={(x, y, z) => handleDate(x, y, z)}
+                  handleDelete={handleDelete}
+                  handleSave={(x, y, z) => handleSave(x, y, z)}
+                />
+              ))}
             </div>
-            {autoTrans.map((value, index) => (
-              <AutoRow
+          )}
+        </div>
+      )}
+      {!toggleLock && (
+        <div className="budget-container">
+          <div className="newcat">
+            <NewBox title="New Category" handleClick={handleNewCat} />
+          </div>
+          <div className="budget-titles">
+            <p>Category</p>
+            <p>Budgeted</p>
+            <p>Remaining</p>
+          </div>
+          <div className="budget">
+            {boxvalue.map((value, index) => (
+              <Budget
+                value={value}
+                index={index}
+                handleDelete={handleDelete}
+                handleCatName={(x, y, z) => handleCatName(x, y, z)}
+                handleInput={(x, y, z) => handleInput(x, y, z)}
+                box={boxvalue}
+                tran={transaction}
+                settings={settings}
+                calcP={calculatePayperiod}
+                checkPersist={(x, y) => checkPersist(x, y)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+      {!toggleLock && (
+        <div className="savings-container">
+          <div className="new-savings">
+            <FontAwesomeIcon
+              icon={faSquarePlus}
+              className="newbutton"
+              onClick={newSavings}
+            />
+            <h4 className="faTitle">Savings</h4>
+          </div>
+          <div className="budget-titles">
+            <p>Savings Name</p>
+            <p>Budgeted</p>
+            <p>Total</p>
+          </div>
+          <div className="savings">
+            {savings.map((value, index) => (
+              <Savings
                 data={value}
                 index={index}
-                autotransData={autoTrans}
+                handleDelete={handleDelete}
+                savingsCallback={(x, y, z) => handleInput(x, y, z)}
+                savingsname={(x, y, z) => handleSavingsName(x, y, z)}
+                sav={savings}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+      {!toggleLock && (
+        <div className="transaction-container">
+          <div className="new-savings">
+            <FontAwesomeIcon
+              icon={faSquarePlus}
+              className="newbutton"
+              onClick={newRow}
+            />
+            <h4 className="faTitle">Transactions</h4>
+          </div>
+          <div className="transaction-titles">
+            <p className="titlebutton" onClick={() => { sort() }}>Date</p>
+            <p>Memo</p>
+            <p>Category</p>
+            <p>Expense</p>
+            <p>Income</p>
+          </div>
+          <div className="transactions">
+            {transaction.map((event, index) => (
+              <Row
+                index={index}
+                data={event}
+                tran={transaction}
                 boxvalue={boxvalue}
                 handleCatOption={handleCatOption}
-                saveAuto={(x, y, z) => saveAuto(x, y, z)}
                 inputCallback={(x, y, z) => handleInput(x, y, z)}
                 nameCallback={(x, y, z) => transName(x, y, z)}
                 handleDate={(x, y, z) => handleDate(x, y, z)}
                 handleDelete={handleDelete}
-                handleSave={(x, y, z) => handleSave(x, y, z)}
+                key={index}
               />
             ))}
           </div>
-        )}
-      </div>
-    )}
-    {!toggleLock && (
-      <div className="budget-container">
-        <div className="newcat">
-          <NewBox title="New Category" handleClick={handleNewCat} />
         </div>
-        <div className="budget-titles">
-          <p>Category</p>
-          <p>Budgeted</p>
-          <p>Remaining</p>
-        </div>
-        <div className="budget">
-          {boxvalue.map((value, index) => (
-            <Budget
-              value={value}
-              index={index}
-              handleDelete={handleDelete}
-              handleCatName={(x, y, z) => handleCatName(x, y, z)}
-              handleInput={(x, y, z) => handleInput(x, y, z)}
-              box={boxvalue}
-              tran = {transaction}
-              calcP = {calculatePayperiod}
-              checkPersist = {(x,y)=> checkPersist(x,y)}
-            />
-          ))}
-        </div>
-      </div>
-    )}
-    {!toggleLock && (
-      <div className="savings-container">
-        <div className="new-savings">
-          <FontAwesomeIcon
-            icon={faSquarePlus}
-            className="newbutton"
-            onClick={newSavings}
-          />
-          <h4 className="faTitle">Savings</h4>
-        </div>
-        <div className="budget-titles">
-          <p>Savings Name</p>
-          <p>Budgeted</p>
-          <p>Total</p>
-        </div>
-        <div className="savings">
-          {savings.map((value, index) => (
-            <Savings
-              data={value}
-              index={index}
-              handleDelete={handleDelete}
-              savingsCallback={(x, y, z) => handleInput(x, y, z)}
-              savingsname={(x, y, z) => handleSavingsName(x, y, z)}
-              sav={savings}
-            />
-          ))}
-        </div>
-      </div>
-    )}
-    {!toggleLock && (
-      <div className="transaction-container">
-        <div className="new-savings">
-          <FontAwesomeIcon
-            icon={faSquarePlus}
-            className="newbutton"
-            onClick={newRow}
-          />
-          <h4 className="faTitle">Transactions</h4>
-        </div>
-        <div className="transaction-titles">
-          <p className="titlebutton" onClick={()=>{sort()}}>Date</p>
-          <p>Memo</p>
-          <p>Category</p>
-          <p>Expense</p>
-          <p>Income</p>
-        </div>
-        <div className="transactions">
-          {transaction.map((event, index) => (
-            <Row
-              index={index}
-              data={event}
-              tran={transaction}
-              boxvalue={boxvalue}
-              handleCatOption={handleCatOption}
-              inputCallback={(x, y, z) => handleInput(x, y, z)}
-              nameCallback={(x, y, z) => transName(x, y, z)}
-              handleDate={(x, y, z) => handleDate(x, y, z)}
-              handleDelete={handleDelete}
-              key={index}
-            />
-          ))}
-        </div>
-      </div>
-    )}
-  </div>
-);
+      )}
+    </div>
+  );
 }

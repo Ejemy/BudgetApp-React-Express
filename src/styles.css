@@ -2,11 +2,12 @@
   display: grid;
   grid-template-areas:
       "title title title"
+      "bar bar bar"
       "tot tot tot"
       "auto trans trans"
       "budg trans trans"
       "save trans trans";
-  grid-template-rows: 1fr 1fr 0fr 20fr 10fr;
+  grid-template-rows: 1fr 1fr 1fr 0fr 20fr 10fr;
   grid-template-columns: 2fr 2fr 2fr;
   height: 100vh;
   grid-gap: 0.6em;
@@ -340,3 +341,23 @@ body{
 }
 
 }
+
+.taskbar {
+  grid-area: bar;
+  display:flex;
+}
+
+.paydayPopup{
+  border: 3px black solid;
+  box-shadow:3px 3px 3px;
+  position: absolute;
+  left: 30%;
+  top: 30%;
+  background-color: white;
+  width: 30%;
+  height: 10%;
+  text-align: center;
+  padding: 2em;
+  margin: auto;
+}
+

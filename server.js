@@ -22,10 +22,12 @@ app.use(express.static(path.join(__dirname, 'build')))
   var transactionSchema = new mongoose.Schema({ _id: String, tname: String, date: Date, category: String, expense: Number, income: Number })
   var savingsSchema = new mongoose.Schema({ _id: String, sname: String, samount: Number, stotal: Number, sss: String, sdate: String })
   var autoTranSchema = new mongoose.Schema({ _id: String, adate: Date, acategory: String, aexpense: Number, aincome: Number, aaa: String })
+  var settingsSchema = new mongoose.Schema({payday: Number})
   let Category = db.model("Category", categorySchema);
   let Transaction = db.model("Transaction", transactionSchema)
   let Savings = db.model("Savings", savingsSchema)
   let Autotrans = db.model("Autotrans", autoTranSchema)
+  let Settings = db.model("Settings", settingsSchema)
 
 
   app.post("/login", (req, res) => {
@@ -43,8 +45,9 @@ app.use(express.static(path.join(__dirname, 'build')))
       const transD = await Transaction.find({}) //.sort({date: 1}) I should look into pagination
       const savingsD = await Savings.find({})
       const autoD = await Autotrans.find({})
+      const setD = await Settings.find({})
 
-      const combinedData = { category: data, transaction: transD, savings: savingsD, auto: autoD }
+      const combinedData = { category: data, transaction: transD, savings: savingsD, auto: autoD, settings: setD }
 
       return res.json(combinedData);
 
@@ -59,7 +62,12 @@ app.use(express.static(path.join(__dirname, 'build')))
 
   app.post("/update", async (req, res) => {
     try {
-      if (req.body[0][5] && req.body[0][4] != "savings" && req.body[0][5] != "aaa" && typeof req.body[0][5] === "number") {
+      const reqdata = req.body;
+      if(reqdata.payday){
+        console.log("UPDATING settings");
+        const doc = await Settings.updateOne({}, {payday: reqdata.payday}, {new: true, upsert: true});
+        return res.status(200).json({data: doc})
+      }else if (req.body[0][5] && req.body[0][4] != "savings" && req.body[0][5] != "aaa" && typeof req.body[0][5] === "number") {
         console.log("updating TRANSACTIONS")
         const updateAll = await Promise.all(
           req.body.map(async (item) => {
@@ -104,6 +112,7 @@ app.use(express.static(path.join(__dirname, 'build')))
         );
         return res.status(200).json({ data: updateAll })
       }
+      
     } catch (err) {
       console.log(err)
       res.status(500).json({ error: "Internal server error." })
