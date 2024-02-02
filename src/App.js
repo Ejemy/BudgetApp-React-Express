@@ -30,13 +30,13 @@ function CategoryName({ categname, idval, val, id, checkPersist }) {
   );
 }
 
-function AmountBox({ Numvalue, Spent, trans, calcP }) {
+function AmountBox({ Numvalue, Spent, trans, calcP, pd }) {
   let colorr = "black";
   let realSpent = 0;
   for (let x in trans) {
 
     if (trans[x][3] === Numvalue[1]) {
-      if (trans[x][4] > 0 && calcP(trans[x][2])) {
+      if (trans[x][4] > 0 && calcP(trans[x][2], pd[0].payday)) {
         realSpent += trans[x][4]
       } else if (trans[x][4] > 0 && Numvalue[5] === true) {
         realSpent += trans[x][4]
@@ -111,6 +111,7 @@ function Budget({
   box,
   tran,
   calcP,
+  settings,
   checkPersist
 }) {
   return (
@@ -146,6 +147,7 @@ function Budget({
           Spent={value[3]}
           trans={tran}
           calcP={calcP}
+          pd={settings}
         />
       </div>
       <div className="deleteCat">
@@ -324,7 +326,7 @@ function AutoRow({
   );
 }
 
-function Totals({ tots, transaction, budget, saving, payperiod }) {
+function Totals({ tots, transaction, budget, saving, payperiod, settings }) {
   //tots is the total of budgeted amount and savings but not remaining!
   let expense = 0;
   let income = 0;
@@ -341,8 +343,8 @@ function Totals({ tots, transaction, budget, saving, payperiod }) {
       income += transaction[i][5];
       //console.log("INCOME: ", transaction[i][5], "var income now is : ", income)
     }
-    console.log("pp", payperiod(transaction[i][2]))
-    if (isIncome && transaction[i][5] > 0 && payperiod(transaction[i][2])) {
+    console.log("pp", settings[0])
+    if (isIncome && transaction[i][5] > 0 && payperiod(transaction[i][2], settings[0].payday)) {
       //totalRemaining += transaction[i][5];
       nonspecificIncome += transaction[i][5];
     }
@@ -504,7 +506,7 @@ export default function App() {
 
         for (let i in data.category) {
           const bdate = new Date(data.category[i].bdate);
-          const payday = calculatePayperiod(bdate);
+          const payday = calculatePayperiod(bdate, data.settings.payday);
           if (payday) {
             stuff[i] = [
               data.category[i]._id,
@@ -542,7 +544,7 @@ export default function App() {
         for (let s in data.savings) {
           const dbdate = new Date(data.savings[s].sdate);
           //my payday is the 20th
-          const payday = calculatePayperiod(dbdate);
+          const payday = calculatePayperiod(dbdate, data.settings.payday);
           if (payday) {
             sav[s] = [
               data.savings[s]._id,
@@ -579,7 +581,7 @@ export default function App() {
 
           //my payday is the 20th
           for (let i in data.transaction) {
-            const payperiod = calculatePayperiod(data.transaction[i].date)
+            const payperiod = calculatePayperiod(data.transaction[i].date, data.settings.payday)
             if (
               data.auto[a].acategory === data.transaction[i].category &&
               payperiod && data.auto[a].aexpense === data.transaction[i].expense
@@ -763,8 +765,7 @@ export default function App() {
     setTotal(total);
   }
 
-  function calculatePayperiod(theTrans) {
-    const payd = settings.payday
+  function calculatePayperiod(theTrans, payd) {
     const today = new Date();
     const day = today.getDate();
     const month = today.getMonth();
@@ -806,7 +807,7 @@ export default function App() {
 
 
       for (let ii = 0; ii < nextTransaction.length; ii++) {
-        const pp = calculatePayperiod(nextTransaction[ii][2]);
+        const pp = calculatePayperiod(nextTransaction[ii][2], settings.payday);
 
 
         if (
@@ -1251,7 +1252,7 @@ export default function App() {
     //my payday is the 20th
     let checky = true;
     for (let i in tempTrans) {
-      const payday = calculatePayperiod(tempTrans[i][2]);
+      const payday = calculatePayperiod(tempTrans[i][2], settings.payday);
 
       if (payday && tempTrans[i][3] === data[2] && tempTrans[i][4] === data[3]) {
         checky = false;
@@ -1330,7 +1331,7 @@ export default function App() {
     event.preventDefault();
     const payDate = document.getElementById("payday-value").value;
      if(payDate){
-    setSettings({payday: payDate})
+    setSettings([{payday: payDate}])
      }
    
     document.getElementById("settings-payday").style.display = "none";
@@ -1416,7 +1417,8 @@ export default function App() {
             transaction={transaction}
             budget={boxvalue}
             saving={savings}
-            payperiod={(x) => calculatePayperiod(x)} />
+            settings = {settings}
+            payperiod={(x,y) => calculatePayperiod(x, y)} />
         </div>
       )}
       {!toggleLock && (
@@ -1471,6 +1473,7 @@ export default function App() {
                 handleInput={(x, y, z) => handleInput(x, y, z)}
                 box={boxvalue}
                 tran={transaction}
+                settings={settings}
                 calcP={calculatePayperiod}
                 checkPersist={(x, y) => checkPersist(x, y)}
               />

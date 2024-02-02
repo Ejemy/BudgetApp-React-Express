@@ -65,8 +65,8 @@ app.use(express.static(path.join(__dirname, 'build')))
       const reqdata = req.body;
       if(reqdata.payday){
         console.log("UPDATING settings");
-        const update = await Settings.update({payday: reqdata.payday})
-        return res.status(200).json({data: update})
+        const doc = await Settings.updateOne({}, {payday: reqdata.payday}, {new: true, upsert: true});
+        return res.status(200).json({data: doc})
       }else if (req.body[0][5] && req.body[0][4] != "savings" && req.body[0][5] != "aaa" && typeof req.body[0][5] === "number") {
         console.log("updating TRANSACTIONS")
         const updateAll = await Promise.all(
