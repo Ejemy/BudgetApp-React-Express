@@ -2,7 +2,7 @@ import "./styles.css";
 
 import { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSquarePlus } from "@fortawesome/free-solid-svg-icons";
+import { faSquarePlus, faFloppyDisk } from "@fortawesome/free-solid-svg-icons";
 
 function CategoryAmount({ parentCallback, idval, val, id }) {
   return (
@@ -77,16 +77,16 @@ function NewBox({ handleClick, title, id }) {
 
 function TransCat({ categories, change, index, data }) {
   let theData;
-  if (data[5] == "aaa") {
+  /*if (data[5] == "aaa") {
     theData = data[2];
   } else {
     theData = data[3];
-  }
+  }*/
   return (
     <select
       name="dropdown"
       className="options"
-      value={theData}
+      value={data[3]}
       onChange={(event) => change(event, index)}
     >
       <option value="1" className="firstoption"></option>
@@ -210,47 +210,81 @@ function Row({
   data,
   tran,
   boxvalue,
-  handleCatOption,
-  inputCallback,
-  nameCallback,
-  handleDate,
   handleDelete,
+  handleChange,
+  save
 }) {
+  let checkifsave;
+  let savedate;
+  let savememo;
+  let savedata;
+  let saveexpend;
+  let saveincome;
+  let savenone;
+  if(save){
+    console.log(data)
+    console.log(data[2])
+    checkifsave = "savediv";
+    savedate = "savedate";
+    savememo = "savememo";
+    savedata = "savedata";
+    saveexpend = "saveexpend";
+    saveincome = "saveincome";
+    savenone = "none"
+  } else {
+    saveexpend = "out"
+    saveincome = "in"
+  }
   return (
-    <div className="row-transaction">
+    <div className="row-transaction" id= {checkifsave}>
       <input
+        id = {savedate}
         placeholder="Date"
         className="date"
         type="date"
         value={data[2].toString().slice(0, 10)}
-        onChange={(eventD) => {
-          handleDate(eventD, index, data[0]);
+        onChange={(event)=>{
+          if(save){
+            handleChange(event.target.value, savedate)
+          }
         }}
+        
       />
       <input
+        id={savememo}
         placeholder="Memo"
         className="trans-name"
         value={data[1]}
-        onChange={(eventData) => nameCallback(eventData, index, data[0])}
+        onChange={(event) => {if(save){
+          handleChange(event.target.value, savememo)}
+        }}
       />
       <TransCat
+        id={savedata}
         categories={boxvalue}
         data={data}
-        change={(extra) => handleCatOption(extra, index, data[0], "trans")}
+        
+        change={(event) => {if(save){
+          handleChange(event.target.value, savedata)
+        }}}
       />
       <input
+        id={saveexpend}
         placeholder="Expenditure"
         className="expend"
-        id="out"
-        value={"¥" + data[4].toLocaleString()}
-        onChange={(eventData) => inputCallback(eventData, index, data[0])}
+        value={"¥" + data[4].toLocaleString()}       
+        onChange={(event) => {if(save){
+          handleChange(event.target.value, saveexpend)
+        }}}
       />
       <input
+        id={saveincome}
         placeholder="Income"
         className="income"
-        id="in"
-        value={"¥" + data[5].toLocaleString()}
-        onChange={(eventData) => inputCallback(eventData, index, data[0])}
+        value={ "¥" + data[5].toLocaleString()}
+        onChange={(event) => {if(save){
+          handleChange(event.target.value, saveincome)
+        }}}
       />
       <Delete
         value={data}
@@ -261,6 +295,7 @@ function Row({
         transcallback={(stuff) => {
           handleDelete(stuff, index, data[0]);
         }}
+        none={savenone}
       />
     </div>
   );
@@ -392,7 +427,6 @@ function Totals({ tots, transaction, budget, saving, payperiod, settings }) {
 }
 
 function Delete({
-  value,
   index,
   callback,
   transcallback,
@@ -403,7 +437,13 @@ function Delete({
   auto,
   tran,
   autocallback,
+  none,
 }) {
+  if(none){
+    return(
+      <button style={{display: none}}></button>
+    )
+  }
   if (boxv != undefined) {
     if (boxv.flat().filter((i) => i === id)) {
       return (
@@ -488,6 +528,7 @@ export default function App() {
   const [toggleDiv, setToggleDiv] = useState({auto: false, transaction: false, budget: true, savings: false});
   const [toggleLock, setToggleLock] = useState(true);
   const [passcode, setPasscode] = useState("");
+  const [transactionSave, setTransactionSave] = useState(["", "", "", "", 0, 0]);
 
   useEffect(() => {
     console.log("load...");
@@ -630,6 +671,9 @@ export default function App() {
         .then((response) => response.json())
         .then((data) => {
           console.log("app.js boxvalue/category fetch: ", data);
+          if(data.error){
+            window.alert("Something went wrong. Data was probably not saved this session. Contact admin.")
+          }
         });
     } else if (deleteBool[0]) {
       fetch("/delete", {
@@ -663,6 +707,9 @@ export default function App() {
         })
         .then((data) => {
           console.log("app.js transaction fetch: ", data);
+          if(data.error){
+            window.alert("Something went wrong. Data was probably not saved this session. Contact admin.")
+          }
         });
     } else if (deleteBool[0]) {
       fetch("/delete", {
@@ -673,6 +720,7 @@ export default function App() {
         .then((response) => response.json())
         .then((data) => {
           console.log("app.js transaction DELETE fetch: ", data);
+          
         });
 
       setDeletebool([false, []]);
@@ -691,6 +739,9 @@ export default function App() {
         .then((response) => response.json())
         .then((data) => {
           console.log("app.js savings fetch: ", data);
+          if(data.error){
+            window.alert("Something went wrong. Data was probably not saved this session. Contact admin.")
+          }
         });
     } else if (deleteBool[0]) {
       fetch("/delete", {
@@ -757,6 +808,21 @@ export default function App() {
 
     const boxvalstr = filterArr.join("");
     return boxvalstr;
+  }
+
+  function formatNumber(number){
+    let newNumber = number.split("");
+    if(newNumber[0] === "0" && newNumber.length > 0){
+      newNumber.splice(0,1)
+    } 
+    for (let j in newNumber) {
+      if (newNumber[j].match(/\D/)) {
+        newNumber.splice(j, 1)
+      }
+    }
+    newNumber = newNumber.join("")
+    let str = newNumber.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return str;
   }
 
   function calculateTotal(savingss, boxv) {
@@ -1021,27 +1087,15 @@ export default function App() {
   }
 
   function newRow() {
-    const abc = "abcdefghijklmnopqrstuvwxyz!#$%";
-    const ranNum = Math.floor(Math.random() * 100);
-    const ranNum2 = Math.floor(Math.random() * 100);
-    const ranLet = abc[Math.floor(Math.random() * abc.length)];
-    const ranLet2 = abc[Math.floor(Math.random() * abc.length)];
-    const newId = ranNum + ranLet + ranNum2 + ranLet2;
-    const newArr = [newId, "", "", "", 0, 0];
+    const newArr = [randomId(), "", "", "", 0, 0];
     setTransaction([...transaction, newArr]);
   }
 
   function newSavings() {
-    const abc = "abcdefghijklmnopqrstuvwxyz!#$%";
-    const ranNum = Math.floor(Math.random() * 100);
-    const ranNum2 = Math.floor(Math.random() * 100);
-    const ranLet = abc[Math.floor(Math.random() * abc.length)];
-    const ranLet2 = abc[Math.floor(Math.random() * abc.length)];
-    const newId = ranNum + ranLet + ranNum2 + ranLet2;
     const date = new Date();
     const day = date.getDate();
     console.log(day);
-    const newArr = [newId, "", 0, 0, "savings", date];
+    const newArr = [randomId(), "", 0, 0, "savings", date];
     setSavings([...savings, newArr]);
   }
 
@@ -1074,13 +1128,7 @@ export default function App() {
 
   function handleNewCat() {
     const date = new Date();
-    const abc = "abcdefghijklmnopqrstuvwxyz!#$%";
-    const ranNum = Math.floor(Math.random() * 100);
-    const ranNum2 = Math.floor(Math.random() * 100);
-    const ranLet = abc[Math.floor(Math.random() * abc.length)];
-    const ranLet2 = abc[Math.floor(Math.random() * abc.length)];
-    const idVal = ranNum + ranLet + ranNum2 + ranLet2;
-    setBoxvalue([...boxvalue, [idVal, "", 0, 0, date, false]]);
+    setBoxvalue([...boxvalue, [randomId(), "", 0, 0, date, false]]);
   }
 
   function handleDelete(val, index, id) {
@@ -1201,13 +1249,6 @@ export default function App() {
 
   //this is used for when the auto needs to be added to transactions from auto trans when I /load or click save
   function addNewAuto(data) {
-    const abc = "abcdefghijklmnopqrstuvwxyz!#$%";
-    const ranNum = Math.floor(Math.random() * 100);
-    const ranNum2 = Math.floor(Math.random() * 100);
-    const ranLet = abc[Math.floor(Math.random() * abc.length)];
-    const ranLet2 = abc[Math.floor(Math.random() * abc.length)];
-    const newId = ranNum + ranLet + ranNum2 + ranLet2;
-
     let ddd = new Date(data.adate);
     const ddate = ddd.toString(); // Fri Dec 22 2022
     const day = ddate.slice(8, 10) //Fri Dec 2 2220
@@ -1220,7 +1261,7 @@ export default function App() {
     const newdate = new Date(ddd); //this is a current month and year but DAY from the data
 
     const newArr = [
-      newId,
+      randomId(),
       "AUTO",  //NEED THIS BECAUSE THIS IS A TRANSACTION
       newdate,
       data.acategory,
@@ -1231,16 +1272,20 @@ export default function App() {
     return newArr;
   }
 
-  function newAuto() {
+  function randomId(){
     const abc = "abcdefghijklmnopqrstuvwxyz!#$%";
     const ranNum = Math.floor(Math.random() * 100);
     const ranNum2 = Math.floor(Math.random() * 100);
     const ranLet = abc[Math.floor(Math.random() * abc.length)];
     const ranLet2 = abc[Math.floor(Math.random() * abc.length)];
     const newId = ranNum + ranLet + ranNum2 + ranLet2;
+    return newId;
+  }
+
+  function newAuto() {
 
     const newArr = [
-      newId,
+      randomId(),
       "",
       "",
       0,
@@ -1318,13 +1363,11 @@ export default function App() {
   function sort() {
     let t = transaction.slice();
     const tt = t.sort((a, b) => { return new Date(a[2]) - new Date(b[2]) });
-    console.log("T", tt);
     setTransaction(tt);
   }
 
   function checkPersist(e, bval) {
-    console.log(e)
-    console.log(bval)
+    
     const bv = boxvalue.slice();
     for (let i in bv) {
       if (bv[i][0] === bval[0]) {
@@ -1343,6 +1386,52 @@ export default function App() {
    
     document.getElementById("settings-payday").style.display = "none";
    
+  }
+
+  function saveTransaction(){
+    const ts = transactionSave.slice();
+    ts[0] = randomId();
+    
+    setTransaction([...transaction, ts])
+    setTransactionSave(["","","", "", 0, 0])
+  }
+
+  function handleChange(e, which){
+    const ts = transactionSave.slice();
+    switch(which){
+      case "savedate":
+        ts[2] = e
+        break;
+      case "savememo":
+        ts[1] = e;
+        break;
+      case "savedata":
+        ts[3] = e;
+        break;
+      case "saveexpend":
+        ts[4] = formatNumber(e)
+        break;
+      case "saveincome":
+        ts[5] = formatNumber(e)
+        break;
+    }
+    const newexpense = ts[4];
+    const newincome = ts[5]
+    ts[4] = parseNumber(newexpense)
+    ts[5] = parseNumber(newincome)
+    setTransactionSave(ts);
+  }
+
+  //Take out the comma and return real number
+  function parseNumber(num){
+    if(!num){
+      return 0;
+    }
+    if(num.length > 0){
+      return parseFloat(num.split(",").join(""));
+    } else {
+      return parseFloat(num)
+    }
   }
 
   return (
@@ -1537,6 +1626,22 @@ export default function App() {
               className="newbutton"
               onClick={newRow}
             />
+            
+            <div className="new-savings">
+              <FontAwesomeIcon
+              icon={faFloppyDisk}
+              className="newbutton"
+              onClick={()=>{
+                const date = document.getElementById("savedate")
+                const memo = document.getElementById("savememo")
+                const expend = document.getElementById("saveexpend")
+                const data = document.getElementById("savedata")
+                const income = document.getElementById("saveincome")
+                saveTransaction(date, memo, data, expend, income)
+              }}
+              />
+            </div>
+            <Row save={true} handleChange={(e, x)=>{handleChange(e, x)}} data = {transactionSave} tran={transaction} boxvalue={boxvalue} />
             <h4 className="faTitle">Transactions</h4>
           </div>
           <div className="transaction-titles">
