@@ -221,7 +221,7 @@ function Row({
   let saveexpend;
   let saveincome;
   let savenone;
-  if(save){
+  if (save) {
     console.log(data)
     console.log(data[2])
     checkifsave = "savediv";
@@ -236,55 +236,63 @@ function Row({
     saveincome = "in"
   }
   return (
-    <div className="row-transaction" id= {checkifsave}>
+    <div className="row-transaction" id={checkifsave}>
       <input
-        id = {savedate}
+        id={savedate}
         placeholder="Date"
         className="date"
         type="date"
         value={data[2].toString().slice(0, 10)}
-        onChange={(event)=>{
-          if(save){
+        onChange={(event) => {
+          if (save) {
             handleChange(event.target.value, savedate)
           }
         }}
-        
+
       />
       <input
         id={savememo}
         placeholder="Memo"
         className="trans-name"
         value={data[1]}
-        onChange={(event) => {if(save){
-          handleChange(event.target.value, savememo)}
+        onChange={(event) => {
+          if (save) {
+            handleChange(event.target.value, savememo)
+          }
         }}
       />
       <TransCat
         id={savedata}
         categories={boxvalue}
         data={data}
-        
-        change={(event) => {if(save){
-          handleChange(event.target.value, savedata)
-        }}}
+
+        change={(event) => {
+          if (save) {
+            handleChange(event.target.value, savedata)
+          }
+        }}
       />
       <input
         id={saveexpend}
         placeholder="Expenditure"
         className="expend"
-        value={"¥" + data[4].toLocaleString()}       
-        onChange={(event) => {if(save){
-          handleChange(event.target.value, saveexpend)
-        }}}
+        value={"¥" + data[4].toLocaleString()}
+        onChange={(event) => {
+          if (save) {
+            handleChange(event.target.value, saveexpend)
+          }
+        }}
       />
       <input
         id={saveincome}
         placeholder="Income"
         className="income"
-        value={ "¥" + data[5].toLocaleString()}
-        onChange={(event) => {if(save){
-          handleChange(event.target.value, saveincome)
-        }}}
+        value={"¥" + data[5].toLocaleString()}
+        onChange={(event) => {
+          if (save) {
+            handleChange(event.target.value, saveincome)
+          }
+        }}
       />
       <Delete
         value={data}
@@ -439,9 +447,9 @@ function Delete({
   autocallback,
   none,
 }) {
-  if(none){
-    return(
-      <button style={{display: none}}></button>
+  if (none) {
+    return (
+      <button style={{ display: none }}></button>
     )
   }
   if (boxv != undefined) {
@@ -525,7 +533,7 @@ export default function App() {
   const [settings, setSettings] = useState([{ payday: 20 }]);
 
 
-  const [toggleDiv, setToggleDiv] = useState({auto: false, transaction: false, budget: true, savings: false});
+  const [toggleDiv, setToggleDiv] = useState({ auto: false, transaction: false, budget: true, savings: false });
   const [toggleLock, setToggleLock] = useState(true);
   const [passcode, setPasscode] = useState("");
   const [transactionSave, setTransactionSave] = useState(["", "", "", "", 0, 0]);
@@ -542,10 +550,10 @@ export default function App() {
         let aut = autoTrans.slice();
         let pday;
         let settingsp;
-        if(!data.settings.payday){
+        if (!data.settings.payday) {
           pday = 20;
-          settingsp = {payday: 20}
-        } else{
+          settingsp = { payday: 20 }
+        } else {
           pday = data.settings.payday
           setSettings(data.settings)
 
@@ -654,8 +662,9 @@ export default function App() {
         setBoxvalue(stuff);
         calculateSpentandSetBV(stuff, transstuff);
         calculateTotal(sav, stuff);
-        setFirstload(false);
       });
+      setFirstload(false);
+
   }, []);
 
   useEffect(() => {
@@ -669,7 +678,7 @@ export default function App() {
         .then((response) => response.json())
         .then((data) => {
           console.log("app.js boxvalue/category fetch: ", data);
-          if(data.error){
+          if (data.error) {
             window.alert("Something went wrong. Data was probably not saved this session. Contact admin.")
           }
         });
@@ -690,11 +699,10 @@ export default function App() {
 
   useEffect(() => {
     if (!firstload && !deleteBool[0]) {
-
       fetch("/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(transaction),
+        body: JSON.stringify(transactionSave),
       })
         .then((response) => {
           if (!response.ok) {
@@ -704,7 +712,9 @@ export default function App() {
         })
         .then((data) => {
           console.log("app.js transaction fetch: ", data);
-          if(data.error){
+          setTransactionSave(["", "", "", "", 0, 0]);
+
+          if (data.error) {
             window.alert("Something went wrong. Data was probably not saved this session. Contact admin.")
           }
         });
@@ -717,10 +727,10 @@ export default function App() {
         .then((response) => response.json())
         .then((data) => {
           console.log("app.js transaction DELETE fetch: ", data);
-          
-        });
 
+        });
       setDeletebool([false, []]);
+
     }
 
   }, [transaction]);
@@ -736,7 +746,7 @@ export default function App() {
         .then((response) => response.json())
         .then((data) => {
           console.log("app.js savings fetch: ", data);
-          if(data.error){
+          if (data.error) {
             window.alert("Something went wrong. Data was probably not saved this session. Contact admin.")
           }
         });
@@ -792,7 +802,7 @@ export default function App() {
         .then((data) => {
           console.log("app.js settings fetch: ", data);
         });
-    } 
+    }
   }, [settings]);
 
   //Ensures that the input is only a number
@@ -807,11 +817,11 @@ export default function App() {
     return boxvalstr;
   }
 
-  function formatNumber(number){
+  function formatNumber(number) {
     let newNumber = number.split("");
-    if(newNumber[0] === "0" && newNumber.length > 0){
-      newNumber.splice(0,1)
-    } 
+    if (newNumber[0] === "0" && newNumber.length > 0) {
+      newNumber.splice(0, 1)
+    }
     for (let j in newNumber) {
       if (newNumber[j].match(/\D/)) {
         newNumber.splice(j, 1)
@@ -1269,7 +1279,7 @@ export default function App() {
     return newArr;
   }
 
-  function randomId(){
+  function randomId() {
     const abc = "abcdefghijklmnopqrstuvwxyz!#$%";
     const ranNum = Math.floor(Math.random() * 100);
     const ranNum2 = Math.floor(Math.random() * 100);
@@ -1325,7 +1335,7 @@ export default function App() {
 
   function showDiv(x) {
     const tab = x;
-    setToggleDiv({[x]: !toggleDiv[tab]});
+    setToggleDiv({ [x]: !toggleDiv[tab] });
   }
 
   const handlelogSubmit = async (event) => {
@@ -1364,7 +1374,7 @@ export default function App() {
   }
 
   function checkPersist(e, bval) {
-    
+
     const bv = boxvalue.slice();
     for (let i in bv) {
       if (bv[i][0] === bval[0]) {
@@ -1374,28 +1384,27 @@ export default function App() {
     setBoxvalue(bv)
   }
 
-  function handlePaydaySubmit(event){
+  function handlePaydaySubmit(event) {
     event.preventDefault();
     const payDate = document.getElementById("payday-value").value;
-     if(payDate){
-    setSettings([{payday: payDate}])
-     }
-   
+    if (payDate) {
+      setSettings([{ payday: payDate }])
+    }
+
     document.getElementById("settings-payday").style.display = "none";
-   
+
   }
 
-  function saveTransaction(){
+  function saveTransaction() {
     const ts = transactionSave.slice();
     ts[0] = randomId();
-    
+    setTransactionSave(ts)
     setTransaction([...transaction, ts])
-    setTransactionSave(["","","", "", 0, 0])
   }
 
-  function handleChange(e, which){
+  function handleChange(e, which) {
     const ts = transactionSave.slice();
-    switch(which){
+    switch (which) {
       case "savedate":
         ts[2] = e
         break;
@@ -1420,11 +1429,11 @@ export default function App() {
   }
 
   //Take out the comma and return real number
-  function parseNumber(num){
-    if(!num){
+  function parseNumber(num) {
+    if (!num) {
       return 0;
     }
-    if(num.length > 0){
+    if (num.length > 0) {
       return parseFloat(num.split(",").join(""));
     } else {
       return parseFloat(num)
@@ -1452,12 +1461,12 @@ export default function App() {
       }
       {!toggleLock && (
         <div className="paydayPopup" id="settings-payday" style={{ display: "none" }}>
-          <form onSubmit={(e)=>{
+          <form onSubmit={(e) => {
             handlePaydaySubmit(e)
-            }}>
+          }}>
             <label>When is your payday?</label>
             <input id="payday-value" value={settings.payday} />
-            <input type="submit" value="Close"/>
+            <input type="submit" value="Close" />
           </form>
         </div>
       )}
@@ -1512,22 +1521,22 @@ export default function App() {
             transaction={transaction}
             budget={boxvalue}
             saving={savings}
-            settings = {settings}
-            payperiod={(x,y) => calculatePayperiod(x, y)} />
+            settings={settings}
+            payperiod={(x, y) => calculatePayperiod(x, y)} />
         </div>
       )}
       {!toggleLock && (
         <div className="tab-container">
           <ul>
-            <li><button onClick={() => {showDiv("transaction")}}>Transactions</button></li>
-            <li><button onClick={() => {showDiv("budget")}}>Budget</button></li>
-            <li><button onClick={() => {showDiv("savings")}}>Savings</button></li>
-            <li><button onClick={() => {showDiv("auto")}}>Automatic</button></li>
+            <li><button onClick={() => { showDiv("transaction") }}>Transactions</button></li>
+            <li><button onClick={() => { showDiv("budget") }}>Budget</button></li>
+            <li><button onClick={() => { showDiv("savings") }}>Savings</button></li>
+            <li><button onClick={() => { showDiv("auto") }}>Automatic</button></li>
           </ul>
         </div>
       )}
       {!toggleLock && (
-        
+
         <div className="auto-container">
           {toggleDiv.auto && (
             <div className="autoTransaction">
@@ -1623,22 +1632,22 @@ export default function App() {
               className="newbutton"
               onClick={newRow}
             />
-            
+
             <div className="new-savings">
               <FontAwesomeIcon
-              icon={faFloppyDisk}
-              className="newbutton"
-              onClick={()=>{
-                const date = document.getElementById("savedate")
-                const memo = document.getElementById("savememo")
-                const expend = document.getElementById("saveexpend")
-                const data = document.getElementById("savedata")
-                const income = document.getElementById("saveincome")
-                saveTransaction(date, memo, data, expend, income)
-              }}
+                icon={faFloppyDisk}
+                className="newbutton"
+                onClick={() => {
+                  const date = document.getElementById("savedate")
+                  const memo = document.getElementById("savememo")
+                  const expend = document.getElementById("saveexpend")
+                  const data = document.getElementById("savedata")
+                  const income = document.getElementById("saveincome")
+                  saveTransaction(date, memo, data, expend, income)
+                }}
               />
             </div>
-            <Row save={true} handleChange={(e, x)=>{handleChange(e, x)}} data = {transactionSave} tran={transaction} boxvalue={boxvalue} />
+            <Row save={true} handleChange={(e, x) => { handleChange(e, x) }} data={transactionSave} tran={transaction} boxvalue={boxvalue} />
             <h4 className="faTitle">Transactions</h4>
           </div>
           <div className="transaction-titles">
