@@ -34,11 +34,10 @@ function AmountBox({ Numvalue, Spent, trans, calcP, pd }) {
   let colorr = "black";
   let realSpent = 0;
   for (let x in trans) {
-
-    if (trans[x][3] === Numvalue[1]) {
-      if (trans[x][4] > 0 && calcP(trans[x][2], pd[0].payday)) {
+    if (trans[x][3] === Numvalue[1]) { //matched category name
+      if (trans[x][4] > 0 && calcP(trans[x][2], pd[0].payday)) { //expense and in payperiod
         realSpent += trans[x][4]
-      } else if (trans[x][4] > 0 && Numvalue[5] === true) {
+      } else if (trans[x][4] > 0 && Numvalue[5] === true) { //expense all time and persist option true
         realSpent += trans[x][4]
       }
       if (trans[x][5] > 0) {
@@ -48,7 +47,6 @@ function AmountBox({ Numvalue, Spent, trans, calcP, pd }) {
   }
 
   const left = Numvalue[2] - realSpent
-  const quarter = Numvalue[2] / 3;
   if (left < 0) {
     colorr = "red"
   } else {
@@ -373,8 +371,6 @@ function Totals({ tots, transaction, budget, saving, payperiod, settings }) {
   //tots is the total of budgeted amount and savings but not remaining!
   let expense = 0;
   let income = 0;
-  let totalRemaining = 0; //
-  let total = 0;
   let nonspecificIncome = 0;
   for (let i in transaction) {
     const isIncome = transaction[i][3] === "income" || transaction[i][3] === "";
@@ -384,28 +380,39 @@ function Totals({ tots, transaction, budget, saving, payperiod, settings }) {
     }
     if (transaction[i][5] > 0) {
       income += transaction[i][5];
-      //console.log("INCOME: ", transaction[i][5], "var income now is : ", income)
     }
     if (isIncome && transaction[i][5] > 0 && payperiod(transaction[i][2], settings[0].payday)) {
-      //totalRemaining += transaction[i][5];
       nonspecificIncome += transaction[i][5];
     }
-  }
-  for (let x in budget) {
-    const remaining = budget[x][2] - budget[x][3]; //  ## gift ## 500 ## -10 === 510
-    if (remaining < 0) {
-      tots -= remaining
+
+    for(let x in budget){
+      let realSpent = 0;
+
+      if (transaction[i][3] === budget[x][1]) { //matched category name
+        if (transaction[i][4] > 0 && payperiod(transaction[x][2], settings[0].payday)) { //expense and in payperiod
+          realSpent += transaction[i][4]
+        } else if (transaction[i][4] > 0 && budget[x][5] === true) { //expense all time and persist option true
+          realSpent += transaction[i][4]
+        }
+        if (transaction[i][5] > 0) {
+          realSpent -= transaction[i][5]
+        }
+      }
+      if(realSpent < 0){
+        tots -= realSpent
+      }
     }
   }
+
   for (let y in saving) {
     expense -= saving[y][3];
-    expense -= saving[y][2]
+    expense -= saving[y][2];
 
   }
 
   const actual = income + expense;
   let actualcolor = "green";
-  const calculatedRemaining = nonspecificIncome - tots//income - (totalRemaining + total)
+  const calculatedRemaining = nonspecificIncome - tots
   let remainingcolor = "green";
   if (actual < 0) {
     actualcolor = "red";
@@ -502,7 +509,7 @@ function Delete({
 export default function App() {
   const date = new Date();
 
-  //boxvlue = [id, category, budgetamount, spent, date]
+  //boxvlue = [id, category, budgetamount, spent, date, persist]
   const [boxvalue, setBoxvalue] = useState(
     Array(1).fill(["abc123", "", 0, 0, date, false])
   );
@@ -559,10 +566,11 @@ export default function App() {
 
         }
         const todaydate = new Date();
-
+        //Here it is checking creation dates of the budget category and if it 
         for (let i in data.category) {
           const bdate = new Date(data.category[i].bdate);
           const payday = calculatePayperiod(bdate, pday);
+
           if (payday) {
             stuff[i] = [
               data.category[i]._id,
@@ -660,7 +668,6 @@ export default function App() {
         setSavings(sav);
         setAutotrans(aut);
         setBoxvalue(stuff);
-        calculateSpentandSetBV(stuff, transstuff);
         calculateTotal(sav, stuff);
       });
       setFirstload(false);
@@ -732,6 +739,7 @@ export default function App() {
       setDeletebool([false, []]);
 
     }
+
 
   }, [transaction]);
 
@@ -841,10 +849,13 @@ export default function App() {
       //add savings to budgeted total
       total += savingss[z][2];
     }
+    console.log("setting state Total")
     setTotal(total);
   }
 
   function calculatePayperiod(theTrans, payd) {
+    //PAYPERIOD IS
+    console.log("                        calculatepayperiod()!")
     const today = new Date();
     const day = today.getDate();
     const month = today.getMonth();
@@ -857,7 +868,8 @@ export default function App() {
     const bothOver20 = tday >= payd && day >= payd;
     const bothUnder20 = tday < payd && day < payd;
     const bothOverOrUnder = bothOver20 || bothUnder20;
-
+    console.log("criteria1", sameMonth, bothOver20, bothUnder20)
+    console.log("payday, ", payd, tday, day)
     const criteria1 = sameMonth && bothOverOrUnder;
 
     const differentMonths1 = tmonth === month - 1;
@@ -867,34 +879,38 @@ export default function App() {
     const todayover20 = day >= payd;
     const todayAhead = tover20 && differentMonths1 && !todayover20;
 
+    console.log("criteria2", tover20, differentMonths1, !todayover20)
+
     const criteria2 = todayAhead;
 
     const oneIsDec = tmonth === 11;
     const oneIsJan = month === 0;
     const decAndJan = oneIsDec && oneIsJan;
 
+    console.log("criteria3", decAndJan, tover20, !todayover20)
     const criteria3 = decAndJan && tover20 && !todayover20;
 
     const payperiod = criteria1 || criteria2 || criteria3;
+    console.log("calculatepayperiod()", payperiod)
     return payperiod;
   }
 
 
   function calculateSpentandSetBV(nextBoxVal, nextTransaction) {
-    for (let x = 0; x < nextBoxVal.length; x++) {
+    for (let x in nextBoxVal) {
       let spent = 0;
 
 
-      for (let ii = 0; ii < nextTransaction.length; ii++) {
+      for (let ii in nextTransaction) {
         const pp = calculatePayperiod(nextTransaction[ii][2], settings.payday);
 
-
+        console.log(nextTransaction[ii][1], nextTransaction[ii][3], nextBoxVal[x][1], "payperiod? ", pp)
         if (
           nextBoxVal[x][1] === nextTransaction[ii][3] && //if categories match, expense is present, and
           nextTransaction[ii][4] > 0 &&
           pp
         ) {
-          console.log("updating how much spent...")
+          console.log("updating how much spent for...", nextBoxVal[x][1])
           spent += nextTransaction[ii][4];
           console.log("spent is... ", spent)
         } else if (
@@ -903,6 +919,8 @@ export default function App() {
           pp
         ) {
           spent -= nextTransaction[ii][5];
+          console.log("Calculating how much spent for...", nextBoxVal[x][1])
+          console.log("spent, ", spent)
         }
       }
       nextBoxVal[x] = [
@@ -923,48 +941,7 @@ export default function App() {
     const tempSavings = savings.slice();
     const tempAuto = autoTrans.slice();
     console.log("event id", event.target.id);
-    //out transactions
-    if (event.target.id === "out") {
-      console.log("handleInput()", event.target.id, id);
-      //if OUT then cross check category names and change boxvalue?
-      //This LOOP formats transaction numbers
-      for (let index = 0; index < nextTransaction.length; index++) {
-        if (nextTransaction[index][0] === id) {
-          console.log("OUT transaction: ", nextTransaction[index][0]);
-          const arr = [...val];
-          const filterArr = [];
-          const boxstr = modifyNum(arr, filterArr);
-          const str = boxstr.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-          event.target.value = "¥" + str;
-          nextTransaction[index] = [
-            nextTransaction[index][0],
-            nextTransaction[index][1],
-            nextTransaction[index][2],
-            nextTransaction[index][3],
-            parseFloat(boxstr),
-            nextTransaction[index][5],
-          ];
-        }
-      }
-    } else if (event.target.id === "in") {
-      for (let index = 0; index < nextTransaction.length; index++) {
-        if (nextTransaction[index][0] === id) {
-          const arr = [...val];
-          const filterArr = [];
-          const boxstr = modifyNum(arr, filterArr);
-          const str = boxstr.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-          event.target.value = "¥" + str;
-          nextTransaction[index] = [
-            nextTransaction[index][0],
-            nextTransaction[index][1],
-            nextTransaction[index][2],
-            nextTransaction[index][3],
-            nextTransaction[index][4],
-            parseFloat(boxstr),
-          ];
-        }
-      }
-    } else if (event.target.id === "categoryamount") {
+    if (event.target.id === "categoryamount") {
       //This is for category amount changes
       for (let i = 0; i < nextBoxVal.length; i++) {
         if (nextBoxVal[i][0] === id) {
@@ -1046,7 +1023,6 @@ export default function App() {
     // Calculating SPENT in boxvalue
     calculateSpentandSetBV(nextBoxVal, nextTransaction);
     setSavings(tempSavings);
-    setTransaction(nextTransaction);
     setAutotrans(tempAuto);
   }
 
@@ -1093,15 +1069,9 @@ export default function App() {
     }
   }
 
-  function newRow() {
-    const newArr = [randomId(), "", "", "", 0, 0];
-    setTransaction([...transaction, newArr]);
-  }
-
   function newSavings() {
     const date = new Date();
     const day = date.getDate();
-    console.log(day);
     const newArr = [randomId(), "", 0, 0, "savings", date];
     setSavings([...savings, newArr]);
   }
@@ -1402,6 +1372,7 @@ export default function App() {
     setTransaction([...transaction, ts])
   }
 
+  //To change transactionSave state onChange
   function handleChange(e, which) {
     const ts = transactionSave.slice();
     switch (which) {
@@ -1439,6 +1410,8 @@ export default function App() {
       return parseFloat(num)
     }
   }
+
+  
 
   return (
     <div className="App">
@@ -1535,10 +1508,9 @@ export default function App() {
           </ul>
         </div>
       )}
-      {!toggleLock && (
+      {!toggleLock && toggleDiv.auto && (
 
         <div className="auto-container">
-          {toggleDiv.auto && (
             <div className="autoTransaction">
               <div className="new-savings">
                 <FontAwesomeIcon
@@ -1564,7 +1536,6 @@ export default function App() {
                 />
               ))}
             </div>
-          )}
         </div>
       )}
       {!toggleLock && toggleDiv.budget && (
@@ -1627,13 +1598,7 @@ export default function App() {
       {!toggleLock && toggleDiv.transaction && (
         <div className="transaction-container">
           <div className="new-savings">
-            <FontAwesomeIcon
-              icon={faSquarePlus}
-              className="newbutton"
-              onClick={newRow}
-            />
-
-            <div className="new-savings">
+           <div className="newTransaction-container">
               <FontAwesomeIcon
                 icon={faFloppyDisk}
                 className="newbutton"
@@ -1646,8 +1611,8 @@ export default function App() {
                   saveTransaction(date, memo, data, expend, income)
                 }}
               />
+              <Row save={true} handleChange={(e, x) => { handleChange(e, x) }} data={transactionSave} tran={transaction} boxvalue={boxvalue} />
             </div>
-            <Row save={true} handleChange={(e, x) => { handleChange(e, x) }} data={transactionSave} tran={transaction} boxvalue={boxvalue} />
             <h4 className="faTitle">Transactions</h4>
           </div>
           <div className="transaction-titles">
@@ -1664,9 +1629,6 @@ export default function App() {
                 data={event}
                 tran={transaction}
                 boxvalue={boxvalue}
-                handleCatOption={handleCatOption}
-                inputCallback={(x, y, z) => handleInput(x, y, z)}
-                nameCallback={(x, y, z) => transName(x, y, z)}
                 handleDate={(x, y, z) => handleDate(x, y, z)}
                 handleDelete={handleDelete}
                 key={index}
