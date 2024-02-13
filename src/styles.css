@@ -1,45 +1,51 @@
-.App{
+.App {
   display: grid;
   grid-template-areas:
-      "bar title title"
-      "tot tot tot"
-      "tab tab tab"
-      "thing thing thing"
-      "thing thing thing"
-      "thing thing thing";
+    "bar title title"
+    "tot tot tot"
+    "tab tab tab"
+    "thing thing thing"
+    "thing thing thing"
+    "thing thing thing";
   grid-template-rows: 1fr 1fr 1fr 0fr 20fr 10fr;
   grid-template-columns: 2fr 2fr 2fr;
   height: 100vh;
   grid-gap: 0.6em;
 }
 
-body{
-  height:100vh;
+body {
+  height: 100vh;
   margin: 0;
-  overflow:hidden;
-  background-color:darkslategrey;
+  overflow: hidden;
+  background-color: darkslategrey;
 }
 
 
-.title-container{
+.title-container {
   grid-area: title;
   display: flex;
   justify-content: space-around;
   width: 60%;
-  margin:auto;
+  margin: auto;
 }
 
-.budget-container, .savings-container, .auto-container  {
+.budget-container,
+.savings-container,
+.auto-container {
   display: flex;
-  flex-direction:column;
+  flex-direction: column;
 
 }
 
-.transaction-container{
+.transaction-container {
   grid-area: thing;
 
 }
-.budget-container, .savings-container, .transaction-container, .auto-container {
+
+.budget-container,
+.savings-container,
+.transaction-container,
+.auto-container {
   background-color: #fff;
   border: 3px solid #000;
   overflow-y: scroll;
@@ -52,46 +58,49 @@ body{
 }
 
 
-.budget, .savings {
+.budget,
+.savings {
   font-family: sans-serif;
   text-align: center;
 }
 
-.row-budget, .row-savings{
-  display:grid;
+.row-budget,
+.row-savings {
+  display: grid;
   grid-template-columns: 1fr 1fr 1fr auto;
 
 }
 
-.savings-name{
+.savings-name {
   width: 100%;
 }
 
-.savings-amount{
+.savings-amount {
   grid-column-start: 2;
 }
 
 
-.title{
-  display:flex;
+.title {
+  display: flex;
   margin: auto;
   width: 50%;
   justify-content: space-between;
 }
 
-.dateTitle{
+.dateTitle {
   border: 3px black solid;
   border-radius: 10px;
-  padding:0.3em;
-  margin:auto;
-  background-color:white;
+  padding: 0.3em;
+  margin: auto;
+  background-color: white;
 }
 
-.date{
+.date {
   border: 1px black solid;
 }
 
-.budget-titles, .transaction-titles{
+.budget-titles,
+.transaction-titles {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   align-content: center;
@@ -103,25 +112,26 @@ body{
 }
 
 
-.budget-titles > p:first-child{
-  grid-column-start:1;
+.budget-titles>p:first-child {
+  grid-column-start: 1;
 }
 
-.budget-titles > p:nth-child(2){
-  grid-column-start:2;
+.budget-titles>p:nth-child(2) {
+  grid-column-start: 2;
 }
 
-.budget-titles > p:nth-child(3){
-  grid-column-start:3;
+.budget-titles>p:nth-child(3) {
+  grid-column-start: 3;
 }
 
 .budget h1 {
   border: 1px black solid;
 }
 
-.transaction-titles{
+.transaction-titles {
   grid-template-columns: .2fr 1fr 1fr 1fr 1fr .1fr;
 }
+
 .titlebutton {
   background-color: darkgrey;
 }
@@ -151,11 +161,12 @@ body{
 
 
 .category-name {
-  width:100%;
+  width: 100%;
 }
 
 
-.amount-box, .savings-total {
+.amount-box,
+.savings-total {
   grid-column-start: 3;
   background-color: lightgrey;
   display: flex;
@@ -176,27 +187,30 @@ body{
   grid-column-start: 1;
 }
 
-.deleteCat{
+.deleteCat {
   grid-column-start: 4;
   display: flex;
-  flex-direction: column;  
+  flex-direction: column;
 }
-.deleteCat button{
-  height:100%;
+
+.deleteCat button {
+  height: 100%;
 }
 
 .total-amount {
-    grid-area: tot;
+  grid-area: tot;
 }
 
-.auto-transaction{
-  display:flex;
+.auto-transaction {
+  display: flex;
   justify-content: center;
 }
 
-.budget-container, .savings-container, .auto-container{
-  grid-area:thing;
-  width:60%;
+.budget-container,
+.savings-container,
+.auto-container {
+  grid-area: thing;
+  width: 60%;
 }
 
 .totals-container {
@@ -207,7 +221,7 @@ body{
 }
 
 .transactions {
-  display:flex;
+  display: flex;
   flex-direction: column-reverse;
 }
 
@@ -226,29 +240,38 @@ body{
 
 
 
-.budgeted, .actual{
-    /* border: 1px black solid; */
-    display: flex;
-    flex-basis: fit-content;
-    align-items:center;
-    text-align: center;
-    margin: auto;
+.budgeted,
+.actual {
+  /* border: 1px black solid; */
+  display: flex;
+  flex-basis: fit-content;
+  align-items: center;
+  text-align: center;
+  margin: auto;
 }
 
-.budgeted p, .actual p {
-  color:black;
-  margin:0;
+.budgeted p,
+.actual p {
+  color: black;
+  margin: 0;
 }
 
 .new-savings {
   display: flex;
-    align-items: center;
-    font-size: 4cqh;
+  align-items: center;
+  font-size: 4cqh;
 }
 
+.newTransaction-container {
+  display: flex;
+  border: 1px black solid;
+  padding: 0.2em;
+  margin: 0.2em;
+  box-shadow: black 2px 2px 5px;
+}
 
 .faTitle {
-  padding:0;
+  padding: 0;
   margin: auto;
 }
 
@@ -256,14 +279,16 @@ body{
 .newbutton {
   transition-duration: 400ms;
 }
+
 .newbutton:hover {
   color: darkgrey;
 }
-.newbutton:active{
+
+.newbutton:active {
   color: grey;
 }
 
-.lock{
+.lock {
   width: 50%;
   height: 50%;
   background-color: white;
@@ -275,35 +300,36 @@ body{
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius:20px;
+  border-radius: 20px;
   transition-duration: 200ms;
 }
 
-.lock form{
+.lock form {
   text-align: center;
 }
+
 .pass {
-  text-align:center;
+  text-align: center;
 }
 
 .submitbutton {
-    width: 300px;
-    height: 80px;
-    background: dodgerblue;
-    border-radius: 6px;
-    transition: all .3s cubic-bezier(0.67, 0.17, 0.40, 0.83);
-    font-size: 2em;
+  width: 300px;
+  height: 80px;
+  background: dodgerblue;
+  border-radius: 6px;
+  transition: all .3s cubic-bezier(0.67, 0.17, 0.40, 0.83);
+  font-size: 2em;
 }
 
 .taskbar {
   grid-area: bar;
-  display:flex;
-  
+  display: flex;
+
 }
 
-.paydayPopup{
+.paydayPopup {
   border: 3px black solid;
-  box-shadow:3px 3px 3px;
+  box-shadow: 3px 3px 3px;
   position: absolute;
   left: 30%;
   top: 30%;
@@ -319,7 +345,8 @@ body{
   grid-area: tab;
 }
 
-.tab-container ul, .taskbar ul {
+.tab-container ul,
+.taskbar ul {
   list-style-type: none;
   display: flex;
   padding: 0;
@@ -329,40 +356,44 @@ body{
 
 @media only screen and (max-width: 600px) {
   .App {
-    display:flex;
+    display: flex;
     flex-direction: column;
-    grid-gap:0;
+    grid-gap: 0;
   }
-  .row-transaction{
+
+  .row-transaction {
     grid-template-columns: 1fr 2fr 2fr 2fr 2fr 1fr;
   }
-  .title-container{
-    margin:0;
+
+  .title-container {
+    margin: 0;
     font-size: small;
     width: 100%;
   }
 
-  .budget-container{
-    height:30%
+  .budget-container {
+    height: 30%
   }
-  .savings-container{
+
+  .savings-container {
     height: 20%;
   }
-  .transaction-container{
-    height:50%
+
+  .transaction-container {
+    height: 50%
   }
-  .transaction-titles{
+
+  .transaction-titles {
     display: none;
   }
 
 
-  .submitbutton{
+  .submitbutton {
     width: 4em;
   }
 
-.date{
-  width: 2em;
-}
+  .date {
+    width: 2em;
+  }
 
 }
-
