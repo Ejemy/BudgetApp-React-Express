@@ -372,47 +372,59 @@ function Totals({ tots, transaction, budget, saving, payperiod, settings }) {
   let expense = 0;
   let income = 0;
   let nonspecificIncome = 0;
-  for (let i in transaction) {
-    const isIncome = transaction[i][3] === "income" || transaction[i][3] === "";
+  let changedTot = tots;
 
-    if (transaction[i][4] > 0) {
-      expense -= transaction[i][4];
-    }
-    if (transaction[i][5] > 0) {
-      income += transaction[i][5];
-    }
-    if (isIncome && transaction[i][5] > 0 && payperiod(transaction[i][2], settings[0].payday)) {
-      nonspecificIncome += transaction[i][5];
-    }
 
-    for(let x in budget){
-      let realSpent = 0;
+  for (let ii in transaction) {
+    const isIncome = transaction[ii][3] === "income" || transaction[ii][3] === "";
 
-      if (transaction[i][3] === budget[x][1]) { //matched category name
-        if (transaction[i][4] > 0 && payperiod(transaction[x][2], settings[0].payday)) { //expense and in payperiod
-          realSpent += transaction[i][4]
-        } else if (transaction[i][4] > 0 && budget[x][5] === true) { //expense all time and persist option true
-          realSpent += transaction[i][4]
-        }
-        if (transaction[i][5] > 0) {
-          realSpent -= transaction[i][5]
-        }
-      }
-      if(realSpent < 0){
-        tots -= realSpent
+    if (transaction[ii][4] > 0) {
+      expense += transaction[ii][4];
+    }
+    if (transaction[ii][5] > 0) {
+      income += transaction[ii][5];
+      if (isIncome && payperiod(transaction[ii][2], settings[0].payday)) {
+        nonspecificIncome += transaction[ii][5];
       }
     }
+  }
+  for (let x in budget) {
+    let remaining = budget[x][2];
+    for (let i in transaction) {
+      if (transaction[i][3] === budget[x][1]) { //matched category name 
+        if (budget[x][5] === true) { //expense all time and persist option true
+          if (transaction[i][4] > 0) {
+            remaining -= transaction[i][4]
+          } else {
+            remaining += transaction[i][5]
+          }
+
+        } else if (payperiod(transaction[i][2], settings[0].payday)) { //expense and in payperiod
+          if (transaction[i][4] > 0) {
+            remaining -= transaction[i][4]
+          } else {
+            remaining += transaction[i][5]
+          }
+        }
+      }
+
+    }
+    if (remaining < 0) {
+      changedTot -= remaining
+    }
+
   }
 
   for (let y in saving) {
-    expense -= saving[y][3];
-    expense -= saving[y][2];
-
+    income += saving[y][3]; //total saving
   }
 
-  const actual = income + expense;
+  const actual = income - expense;
   let actualcolor = "green";
-  const calculatedRemaining = nonspecificIncome - tots
+  const calculatedRemaining = nonspecificIncome - changedTot
+  console.log("Left to budget is basically")
+  console.log(nonspecificIncome, "-", changedTot)
+  console.log(calculatedRemaining)
   let remainingcolor = "green";
   if (actual < 0) {
     actualcolor = "red";
@@ -526,7 +538,7 @@ export default function App() {
   const [firstload, setFirstload] = useState(true);
   const [deleteBool, setDeletebool] = useState([false, []]);
 
-  //savings = [id, name, budgetamount, total, datestamp]
+  //savings = [id, name, budgetamount, total, type, datestamp]
   const [savings, setSavings] = useState(
     Array(1).fill(["1a2b3c", "", 0, 0, "savings", date])
   );
@@ -571,7 +583,7 @@ export default function App() {
           const bdate = new Date(data.category[i].bdate);
           const payday = calculatePayperiod(bdate, pday);
 
-          if (payday) {
+          if (!payday) {
             stuff[i] = [
               data.category[i]._id,
               data.category[i].name,
@@ -609,7 +621,7 @@ export default function App() {
           const dbdate = new Date(data.savings[s].sdate);
           //my payday is the 20th
           const payday = calculatePayperiod(dbdate, pday);
-          if (payday) {
+          if (!payday) {
             sav[s] = [
               data.savings[s]._id,
               data.savings[s].sname,
@@ -670,7 +682,7 @@ export default function App() {
         setBoxvalue(stuff);
         calculateTotal(sav, stuff);
       });
-      setFirstload(false);
+    setFirstload(false);
 
   }, []);
 
@@ -849,13 +861,11 @@ export default function App() {
       //add savings to budgeted total
       total += savingss[z][2];
     }
-    console.log("setting state Total")
     setTotal(total);
   }
 
   function calculatePayperiod(theTrans, payd) {
     //PAYPERIOD IS
-    console.log("                        calculatepayperiod()!")
     const today = new Date();
     const day = today.getDate();
     const month = today.getMonth();
@@ -868,8 +878,7 @@ export default function App() {
     const bothOver20 = tday >= payd && day >= payd;
     const bothUnder20 = tday < payd && day < payd;
     const bothOverOrUnder = bothOver20 || bothUnder20;
-    console.log("criteria1", sameMonth, bothOver20, bothUnder20)
-    console.log("payday, ", payd, tday, day)
+
     const criteria1 = sameMonth && bothOverOrUnder;
 
     const differentMonths1 = tmonth === month - 1;
@@ -879,7 +888,6 @@ export default function App() {
     const todayover20 = day >= payd;
     const todayAhead = tover20 && differentMonths1 && !todayover20;
 
-    console.log("criteria2", tover20, differentMonths1, !todayover20)
 
     const criteria2 = todayAhead;
 
@@ -887,11 +895,9 @@ export default function App() {
     const oneIsJan = month === 0;
     const decAndJan = oneIsDec && oneIsJan;
 
-    console.log("criteria3", decAndJan, tover20, !todayover20)
     const criteria3 = decAndJan && tover20 && !todayover20;
 
     const payperiod = criteria1 || criteria2 || criteria3;
-    console.log("calculatepayperiod()", payperiod)
     return payperiod;
   }
 
@@ -1411,7 +1417,7 @@ export default function App() {
     }
   }
 
-  
+
 
   return (
     <div className="App">
@@ -1511,31 +1517,31 @@ export default function App() {
       {!toggleLock && toggleDiv.auto && (
 
         <div className="auto-container">
-            <div className="autoTransaction">
-              <div className="new-savings">
-                <FontAwesomeIcon
-                  icon={faSquarePlus}
-                  className="newbutton"
-                  onClick={newAuto}
-                />
-                <h4 className="faTitle">Auto Transactions</h4>
-              </div>
-              {autoTrans.map((value, index) => (
-                <AutoRow
-                  data={value}
-                  index={index}
-                  autotransData={autoTrans}
-                  boxvalue={boxvalue}
-                  handleCatOption={handleCatOption}
-                  saveAuto={(x, y, z) => saveAuto(x, y, z)}
-                  inputCallback={(x, y, z) => handleInput(x, y, z)}
-                  nameCallback={(x, y, z) => transName(x, y, z)}
-                  handleDate={(x, y, z) => handleDate(x, y, z)}
-                  handleDelete={handleDelete}
-                  handleSave={(x, y, z) => handleSave(x, y, z)}
-                />
-              ))}
+          <div className="autoTransaction">
+            <div className="new-savings">
+              <FontAwesomeIcon
+                icon={faSquarePlus}
+                className="newbutton"
+                onClick={newAuto}
+              />
+              <h4 className="faTitle">Auto Transactions</h4>
             </div>
+            {autoTrans.map((value, index) => (
+              <AutoRow
+                data={value}
+                index={index}
+                autotransData={autoTrans}
+                boxvalue={boxvalue}
+                handleCatOption={handleCatOption}
+                saveAuto={(x, y, z) => saveAuto(x, y, z)}
+                inputCallback={(x, y, z) => handleInput(x, y, z)}
+                nameCallback={(x, y, z) => transName(x, y, z)}
+                handleDate={(x, y, z) => handleDate(x, y, z)}
+                handleDelete={handleDelete}
+                handleSave={(x, y, z) => handleSave(x, y, z)}
+              />
+            ))}
+          </div>
         </div>
       )}
       {!toggleLock && toggleDiv.budget && (
@@ -1598,7 +1604,7 @@ export default function App() {
       {!toggleLock && toggleDiv.transaction && (
         <div className="transaction-container">
           <div className="new-savings">
-           <div className="newTransaction-container">
+            <div className="newTransaction-container">
               <FontAwesomeIcon
                 icon={faFloppyDisk}
                 className="newbutton"
