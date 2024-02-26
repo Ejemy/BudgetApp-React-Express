@@ -327,7 +327,7 @@ body {
 
 }
 
-.paydayPopup {
+.settings-popup {
   border: 3px black solid;
   box-shadow: 3px 3px 3px;
   position: absolute;
@@ -352,6 +352,24 @@ body {
   padding: 0;
   margin: auto;
 }
+
+
+.chart-container{
+  overflow: hidden;
+  background-color: #fff;
+  border: 1px solid #000;
+  position: absolute;
+  right: 0;
+  left: 0;
+  width: fit-content;
+  animation-duration: 1000ms;
+  margin: auto;
+  top: 0;
+  bottom: 0;
+  height: fit-content;
+  text-align: center;
+}
+
 
 
 @media only screen and (max-width: 600px) {
