@@ -3,6 +3,7 @@ import "./styles.css";
 import { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSquarePlus, faFloppyDisk } from "@fortawesome/free-solid-svg-icons";
+import CircleChart from "./CircleChart"
 
 function CategoryAmount({ parentCallback, idval, val, id }) {
   return (
@@ -556,6 +557,7 @@ export default function App() {
   const [toggleLock, setToggleLock] = useState(true);
   const [passcode, setPasscode] = useState("");
   const [transactionSave, setTransactionSave] = useState(["", "", "", "", 0, 0]);
+  const [statistics, setStatistics] = useState({})
 
   useEffect(() => {
     console.log("load...");
@@ -683,6 +685,7 @@ export default function App() {
         calculateTotal(sav, stuff);
       });
     setFirstload(false);
+    calculateStats()
 
   }, []);
 
@@ -751,7 +754,7 @@ export default function App() {
       setDeletebool([false, []]);
 
     }
-
+    calculateStats()
 
   }, [transaction]);
 
@@ -1417,6 +1420,33 @@ export default function App() {
     }
   }
 
+  function unhide(e,div){
+    var display = document.getElementById(div).style.display;
+    console.log(display)
+    if (!display) {
+      document.getElementById(div).style.display = "none"
+      document.getElementById(div).style.opacity = "0"
+
+    } else {
+      document.getElementById(div).style = {display: "block", opacity: "1"}
+    }
+    
+    
+  }
+
+  function calculateStats(){
+    let statobj = {}
+    for(let i in transaction){
+      const cat = transaction[i][3]
+      const expe = transaction[i][4]
+      if(!statobj[cat]){
+        statobj[cat] = 0;
+      }
+      statobj[cat] += expe;
+      }
+    setStatistics(statobj)
+  }
+
 
 
   return (
@@ -1424,22 +1454,20 @@ export default function App() {
       {!toggleLock && (
         <div className="taskbar">
           <ul>
-            <li><button onClick={() => {
-              if (document.getElementById("settings-payday")) {
-                document.getElementById("settings-payday").style = { display: "block" }
-              }
+            <li><button onClick={(event) => {
+              unhide(event, "settings-payday")
             }
             }
             >Payday</button>
             </li>
-            <li><button>Language</button></li>
+            <li><button onClick={(event) => unhide(event, "statistics")} >Statistics</button></li>
             <li><button>Logout</button></li>
           </ul>
         </div>
       )
       }
       {!toggleLock && (
-        <div className="paydayPopup" id="settings-payday" style={{ display: "none" }}>
+        <div className="settings-popup" id="settings-payday" style={{ display: "none" }}>
           <form onSubmit={(e) => {
             handlePaydaySubmit(e)
           }}>
@@ -1447,6 +1475,11 @@ export default function App() {
             <input id="payday-value" value={settings.payday} />
             <input type="submit" value="Close" />
           </form>
+        </div>
+      )}
+      {!toggleLock && (
+        <div id="statistics" className="chart-container" style= {{ display: "none", height: 0}}>
+          <CircleChart data={statistics}/>
         </div>
       )}
       {toggleLock && (
