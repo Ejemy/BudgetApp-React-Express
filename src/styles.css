@@ -355,9 +355,13 @@ body {
 
 
 .chart-container{
+  display: flex;
   overflow: hidden;
   background-color: #fff;
   border: 1px solid #000;
+  padding: 5em;
+  box-shadow: 5px 5px 5px;
+  border-radius: 5%;
   position: absolute;
   right: 0;
   left: 0;
@@ -368,6 +372,18 @@ body {
   bottom: 0;
   height: fit-content;
   text-align: center;
+}
+
+.tooltip {
+  position: absolute;
+  text-align: center;
+  width: 200px;
+  padding: 1em;
+  background: white;
+  pointer-events: none;
+  border: 1px solid black;
+  border-radius: 5px;
+  box-shadow: 1px 5px 10px black;
 }
 
 
