@@ -3,7 +3,8 @@ import "./styles.css";
 import { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSquarePlus, faFloppyDisk } from "@fortawesome/free-solid-svg-icons";
-import CircleChart from "./CircleChart"
+import CircleChart from "./CircleChart";
+import BarChart from "./BarChart";
 
 function CategoryAmount({ parentCallback, idval, val, id }) {
   return (
@@ -575,7 +576,7 @@ export default function App() {
           pday = 20;
           settingsp = { payday: 20 }
         } else {
-          pday = data.settings.payday
+          pday = data.settings[0].payday
           setSettings(data.settings)
 
         }
@@ -583,7 +584,7 @@ export default function App() {
         //Here it is checking creation dates of the budget category and if it 
         for (let i in data.category) {
           const bdate = new Date(data.category[i].bdate);
-          const payday = calculatePayperiod(bdate, pday);
+          const payday = calculatePayperiod(bdate);
 
           if (!payday) {
             stuff[i] = [
@@ -622,7 +623,7 @@ export default function App() {
         for (let s in data.savings) {
           const dbdate = new Date(data.savings[s].sdate);
           //my payday is the 20th
-          const payday = calculatePayperiod(dbdate, pday);
+          const payday = calculatePayperiod(dbdate);
           if (!payday) {
             sav[s] = [
               data.savings[s]._id,
@@ -659,7 +660,7 @@ export default function App() {
 
           //my payday is the 20th
           for (let i in data.transaction) {
-            const payperiod = calculatePayperiod(data.transaction[i].date, pday)
+            const payperiod = calculatePayperiod(data.transaction[i].date)
             if (
               data.auto[a].acategory === data.transaction[i].category &&
               payperiod && data.auto[a].aexpense === data.transaction[i].expense
@@ -683,9 +684,11 @@ export default function App() {
         setAutotrans(aut);
         setBoxvalue(stuff);
         calculateTotal(sav, stuff);
+
       });
     setFirstload(false);
     calculateStats()
+
 
   }, []);
 
@@ -754,6 +757,7 @@ export default function App() {
       setDeletebool([false, []]);
 
     }
+    console.log("transaction /update next is calculateState()")
     calculateStats()
 
   }, [transaction]);
@@ -867,7 +871,8 @@ export default function App() {
     setTotal(total);
   }
 
-  function calculatePayperiod(theTrans, payd) {
+  function calculatePayperiod(theTrans) {
+    const payd = settings[0].payday;
     //PAYPERIOD IS
     const today = new Date();
     const day = today.getDate();
@@ -881,7 +886,7 @@ export default function App() {
     const bothOver20 = tday >= payd && day >= payd;
     const bothUnder20 = tday < payd && day < payd;
     const bothOverOrUnder = bothOver20 || bothUnder20;
-
+    //Both transaction in question and today are in the same month. Both are either over or under payday.
     const criteria1 = sameMonth && bothOverOrUnder;
 
     const differentMonths1 = tmonth === month - 1;
@@ -891,15 +896,14 @@ export default function App() {
     const todayover20 = day >= payd;
     const todayAhead = tover20 && differentMonths1 && !todayover20;
 
-
+    //Today is a month ahead. Transaction is past the payday. Today is under payday.
     const criteria2 = todayAhead;
 
     const oneIsDec = tmonth === 11;
     const oneIsJan = month === 0;
     const decAndJan = oneIsDec && oneIsJan;
-
+    //Special. Today is January and under payday. Transaction is over the payday.
     const criteria3 = decAndJan && tover20 && !todayover20;
-
     const payperiod = criteria1 || criteria2 || criteria3;
     return payperiod;
   }
@@ -911,9 +915,9 @@ export default function App() {
 
 
       for (let ii in nextTransaction) {
-        const pp = calculatePayperiod(nextTransaction[ii][2], settings.payday);
+        const pp = calculatePayperiod(nextTransaction[ii][2]);
 
-        console.log(nextTransaction[ii][1], nextTransaction[ii][3], nextBoxVal[x][1], "payperiod? ", pp)
+        console.log("calculate spent and set BV , payperiod? ", pp)
         if (
           nextBoxVal[x][1] === nextTransaction[ii][3] && //if categories match, expense is present, and
           nextTransaction[ii][4] > 0 &&
@@ -1289,7 +1293,7 @@ export default function App() {
     //my payday is the 20th
     let checky = true;
     for (let i in tempTrans) {
-      const payday = calculatePayperiod(tempTrans[i][2], settings.payday);
+      const payday = calculatePayperiod(tempTrans[i][2]);
 
       if (payday && tempTrans[i][3] === data[2] && tempTrans[i][4] === data[3]) {
         checky = false;
@@ -1420,7 +1424,7 @@ export default function App() {
     }
   }
 
-  function unhide(e,div){
+  function unhide(e, div) {
     var display = document.getElementById(div).style.display;
     console.log(display)
     if (!display) {
@@ -1428,22 +1432,34 @@ export default function App() {
       document.getElementById(div).style.opacity = "0"
 
     } else {
-      document.getElementById(div).style = {display: "block", opacity: "1"}
+      document.getElementById(div).style = { display: "block", opacity: "1" }
     }
-    
-    
+
+
   }
 
-  function calculateStats(){
-    let statobj = {}
-    for(let i in transaction){
+  function calculateStats() {
+    let statobj = { total: {}, average: {} }
+    for (let i in transaction) {
       const cat = transaction[i][3]
       const expe = transaction[i][4]
-      if(!statobj[cat]){
-        statobj[cat] = 0;
+      if (!statobj.total[cat]) {
+        statobj.total[cat] = 0;
       }
-      statobj[cat] += expe;
+      statobj.total[cat] += expe;
+      if (!statobj.average[cat]) {
+        statobj.average[cat] = { expense: 0, count: 0 }
       }
+      if (calculatePayperiod(transaction[i][2])) {
+        statobj.average[cat].count += 1;
+        statobj.average[cat].expense += expe;
+      }
+    }
+    for (let x in statobj.average) {
+      if (statobj.average[x].expense > 0) {
+        statobj.average[x].expense = statobj.average[x].expense / statobj.average[x].count
+      }
+    }
     setStatistics(statobj)
   }
 
@@ -1472,15 +1488,17 @@ export default function App() {
             handlePaydaySubmit(e)
           }}>
             <label>When is your payday?</label>
-            <input id="payday-value" value={settings.payday} />
+            <input id="payday-value" value={settings[0].payday} />
             <input type="submit" value="Close" />
           </form>
         </div>
       )}
       {!toggleLock && (
-        <div id="statistics" className="chart-container" style= {{ display: "none", height: 0}}>
-          <CircleChart data={statistics}/>
+        <div id="statistics" className="chart-container" style={{ display: "none", height: 0 }}>
+          <CircleChart data={statistics} />
+          <BarChart data={statistics} />
         </div>
+   
       )}
       {toggleLock && (
         <div className="lock" id="loginDiv" onSubmit={handlelogSubmit}>

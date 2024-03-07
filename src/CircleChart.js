@@ -5,23 +5,20 @@ function CircleChart({ data }) {
     const svgRef = useRef(null);
     useEffect(() => {
         if (!data) { return }
-
+        console.log("DATA", data)
         var dataset = []
-        for (var key in data) {
-            if(data[key] > 0){
-              dataset.push({ category: key, expense: data[key] })  
+        for (var key in data.total) {
+            if (data.total[key] > 0) {
+                dataset.push({ category: key, expense: data.total[key] })
             }
-            
+
         }
         const width = 500,
             height = 500,
             radius = Math.min(width, height) / 2;
 
 
-        var colors = []
-        dataset.forEach((i) => {
-            colors.push("rgb(0," + Math.floor(Math.random() * 255) + " , " + Math.floor(Math.random() * 255) + ")")
-        })
+        var colors = ["#e60049", "#0bb4ff", "#50e991", "#e6d800", "#9b19f5", "#ffa300", "#dc0ab4", "#b3d4ff", "#00bfa0"];
 
         const pie = d3.pie().value((d) => d.expense);
         const arcsdata = pie(dataset)
@@ -52,21 +49,29 @@ function CircleChart({ data }) {
             .outerRadius(radius * 1.1)
             .innerRadius(radius / 2.1)
 
-        arc.append("path")
-            .attr("d", path)
-            .attr("fill", function (d) { return ordScale(d.data.expense) })
+
+        const tooltip = d3.select("body")
+            .append("div").classed("tooltip", true)
+        
+        const pieSection = arc.append("path").attr("d", path).attr("fill", function(d) {return ordScale(d.data.expense)})
+
+        pieSection
+            .on("mouseover", (d,i) => {
+                tooltip
+                    .style("left", d.pageX + "px")
+                    .style("top", d.pageY + "px")
+                    .attr("data-value", i.value)
+                    .html(`${i.data.category} <br> ${formatCurrency(i.data.expense)}`) 
+                    .transition()
+                    .duration(500)
+                    .style("opacity", 1)
+                console.log(d)
+            })
+            .on("mouseout", (d,i) => {
+                tooltip.transition().duration(500).style("opacity", 0)
+            })
 
 
-  
-        svg
-            .selectAll('arc')
-            .data(dataset)
-            .enter()
-            .append('text')
-            .text(function (d) { return d.category })
-            .attr("transform", function (d,i) { return "translate(" + labelArc.centroid(arcsdata[i]) +  ")"; })
-            .style("text-anchor", "middle")
-            .style("font-size", 17)
 
 
         return () => {
@@ -76,12 +81,18 @@ function CircleChart({ data }) {
     }, [data]);
     return (
         <div>
-            <h1>The Chart of Data!</h1>
+            <h1><u>Total Spent</u></h1>
             <div ref={svgRef} ></div>
         </div>
     )
 
 };
+
+function formatCurrency(num){
+
+    const str = num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return "¥" + str;
+}
 
 
 
