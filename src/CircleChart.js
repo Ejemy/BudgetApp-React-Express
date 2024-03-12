@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import * as d3 from "d3";
 
-function CircleChart({ data }) {
+function CircleChart({ data, style }) {
     const svgRef = useRef(null);
     useEffect(() => {
         if (!data) { return }
@@ -65,7 +65,6 @@ function CircleChart({ data }) {
                     .transition()
                     .duration(500)
                     .style("opacity", 1)
-                console.log(d)
             })
             .on("mouseout", (d,i) => {
                 tooltip.transition().duration(500).style("opacity", 0)
@@ -80,7 +79,7 @@ function CircleChart({ data }) {
 
     }, [data]);
     return (
-        <div>
+        <div style = {style}>
             <h1><u>Total Spent</u></h1>
             <div ref={svgRef} ></div>
         </div>

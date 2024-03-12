@@ -355,7 +355,6 @@ body {
 
 
 .chart-container{
-  display: flex;
   overflow: hidden;
   background-color: #fff;
   border: 1px solid #000;
@@ -366,13 +365,13 @@ body {
   right: 0;
   left: 0;
   width: fit-content;
-  animation-duration: 1000ms;
   margin: auto;
   top: 0;
   bottom: 0;
   height: fit-content;
   text-align: center;
 }
+
 
 .tooltip {
   position: absolute;
@@ -385,7 +384,6 @@ body {
   border-radius: 5px;
   box-shadow: 1px 5px 10px black;
 }
-
 
 
 @media only screen and (max-width: 600px) {

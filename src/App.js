@@ -2,7 +2,7 @@ import "./styles.css";
 
 import { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSquarePlus, faFloppyDisk } from "@fortawesome/free-solid-svg-icons";
+import { faSquarePlus, faFloppyDisk, faEarthOceania } from "@fortawesome/free-solid-svg-icons";
 import CircleChart from "./CircleChart";
 import BarChart from "./BarChart";
 
@@ -76,12 +76,7 @@ function NewBox({ handleClick, title, id }) {
 }
 
 function TransCat({ categories, change, index, data }) {
-  let theData;
-  /*if (data[5] == "aaa") {
-    theData = data[2];
-  } else {
-    theData = data[3];
-  }*/
+
   return (
     <select
       name="dropdown"
@@ -433,10 +428,12 @@ function Totals({ tots, transaction, budget, saving, payperiod, settings }) {
   } else {
     actualcolor = "green";
   }
-  if (calculatedRemaining <= 0) {
+  if (calculatedRemaining < 0) {
     remainingcolor = "red"
   } else if (calculatedRemaining > 0 && calculatedRemaining < 50000) {
     remainingcolor = "yellow"
+  } else if (calculatedRemaining === 0) {
+    remainingcolor = "black"
   } else {
     remainingcolor = "green"
   }
@@ -554,7 +551,7 @@ export default function App() {
   const [settings, setSettings] = useState([{ payday: 20 }]);
 
 
-  const [toggleDiv, setToggleDiv] = useState({ auto: false, transaction: false, budget: true, savings: false });
+  const [toggleDiv, setToggleDiv] = useState({ auto: false, transaction: false, budget: true, savings: false, charts: 0 });
   const [toggleLock, setToggleLock] = useState(true);
   const [passcode, setPasscode] = useState("");
   const [transactionSave, setTransactionSave] = useState(["", "", "", "", 0, 0]);
@@ -1150,9 +1147,12 @@ export default function App() {
         }
         const deleteItem = tempTrans.slice(t, t + 1);
         tempTrans.splice(t, 1);
+
+        /*
         if (!tempTrans[0]) {
           tempTrans[0] = ["123abc", "", "", "", 0, 0];
         }
+        */
 
         setDeletebool([true, deleteItem]);
         setTransaction(tempTrans);
@@ -1378,7 +1378,14 @@ export default function App() {
 
   }
 
-  function saveTransaction() {
+  function saveTransaction(a, b, c, d, e) {
+    if (!a || !b || !c) {
+      alert("Blank fields.")
+      return null;
+    } else if (!d && !e) {
+      alert("Missing income or expense field.")
+      return null
+    }
     const ts = transactionSave.slice();
     ts[0] = randomId();
     setTransactionSave(ts)
@@ -1463,6 +1470,13 @@ export default function App() {
     setStatistics(statobj)
   }
 
+  function rotateCharts() {
+    const numDivs = 2
+    const newNum = (toggleDiv.charts + 1) % numDivs;
+    console.log(newNum, "newnum")
+    setToggleDiv({... toggleDiv, charts: newNum})
+    console.log(toggleDiv.charts)
+  }
 
 
   return (
@@ -1495,10 +1509,14 @@ export default function App() {
       )}
       {!toggleLock && (
         <div id="statistics" className="chart-container" style={{ display: "none", height: 0 }}>
-          <CircleChart data={statistics} />
-          <BarChart data={statistics} />
+          <button onClick={rotateCharts}>Rotate Charts</button>
+
+          <CircleChart data={statistics} style={{display: toggleDiv.charts === 0 ? 'block' : 'none', height: 500, width:500} }/>
+          <BarChart data={statistics} style = {{display: toggleDiv.charts === 1 ? 'block' : 'none', height: 500, width:500}} />
+
+
         </div>
-   
+
       )}
       {toggleLock && (
         <div className="lock" id="loginDiv" onSubmit={handlelogSubmit}>
