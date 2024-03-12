@@ -1379,6 +1379,7 @@ export default function App() {
   }
 
   function saveTransaction(a, b, c, d, e) {
+    /*
     if (!a || !b || !c) {
       alert("Blank fields.")
       return null;
@@ -1386,6 +1387,7 @@ export default function App() {
       alert("Missing income or expense field.")
       return null
     }
+    */
     const ts = transactionSave.slice();
     ts[0] = randomId();
     setTransactionSave(ts)
